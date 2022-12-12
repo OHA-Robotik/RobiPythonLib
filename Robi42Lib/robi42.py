@@ -2,7 +2,7 @@ from Robi42Lib.gyro import *
 from Robi42Lib.piezo import *
 from Robi42Lib.lcd import *
 from Robi42Lib.led import Led, Leds
-from Robi42Lib.motor import MotorLeft
+from Robi42Lib.motor import MotorLeft, MotorRight
 
 class Robi42:
 
@@ -11,6 +11,7 @@ class Robi42:
     lcd: LCD
     leds: Leds
     motor_left: MotorLeft
+    motor_right: MotorRight
 
     def __init__(self):
         self.gyro = Gyro()
@@ -18,6 +19,7 @@ class Robi42:
         self.lcd = LCD()
         self.leds = Leds()
         self.motor_left = MotorLeft()
+        self.motor_right = MotorRight()
 
     def __enter__(self):
         return self
