@@ -6,7 +6,7 @@ class MotorLeft:
     def __init__(self) -> None:
         self.disable()
         self.step_pwm = PWM(Pin(20, Pin.OUT))
-        self.step_pwm.freq(0)
+        self.step_pwm.freq(420)
         self.step_pwm.duty_u16(32768)
         self.set_stepping_size(1, 1, 1)
         self.set_direction(1)
@@ -35,7 +35,7 @@ class MotorRight:
     def __init__(self) -> None:
         self.disable()
         self.step_pwm = PWM(Pin(21, Pin.OUT))
-        self.step_pwm.freq(0)
+        self.step_pwm.freq(420)
         self.step_pwm.duty_u16(32768)
         self.set_stepping_size(1, 1, 1)
         self.set_direction(1)
