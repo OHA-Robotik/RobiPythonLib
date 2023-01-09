@@ -38,7 +38,7 @@ class MotorRight:
         self.step_pwm.freq(420)
         self.step_pwm.duty_u16(32768)
         self.set_stepping_size(1, 1, 1)
-        self.set_direction(1)
+        self.set_direction(0)
 
     def enable(self):
         motor_and_taster_mcp.digitalWrite(15, 0)

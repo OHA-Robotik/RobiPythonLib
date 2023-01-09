@@ -26,7 +26,7 @@ class Robi42:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.piezo._turn_off()
-        self.lcd._turn_off()
+        self.lcd.off()
         self.leds.all_off()
         self.motor_left.disable()
         self.motor_right.disable()

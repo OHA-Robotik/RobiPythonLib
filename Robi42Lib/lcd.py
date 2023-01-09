@@ -7,8 +7,13 @@ from Robi42Lib.i2c_connections import laser_and_conns_i2c
 class LCD(I2cLcd):
     def __init__(self):
         super().__init__(laser_and_conns_i2c, 0x3F, 2, 16)
+        self.off()
 
-    def _turn_off(self):
+    def off(self):
         self.clear()
         self.backlight_off()
         self.display_off()
+        
+    def on(self):
+        self.backlight_on()
+        self.display_on()

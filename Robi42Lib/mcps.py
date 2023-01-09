@@ -19,11 +19,12 @@ motor_and_taster_mcp = MCP23S17(
 )
 motor_and_taster_mcp.open()
 
-for i in range(0, 8):
+for i in range(8):
     motor_and_taster_mcp.setDirection(i, motor_and_taster_mcp.DIR_OUTPUT)
 
 for i in range(8, 13):
     motor_and_taster_mcp.setDirection(i, motor_and_taster_mcp.DIR_INPUT)
 
-for i in range(15, 16):
+for i in range(14, 16):
     motor_and_taster_mcp.setDirection(i, motor_and_taster_mcp.DIR_OUTPUT)
+
