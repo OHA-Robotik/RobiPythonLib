@@ -27,4 +27,3 @@ for i in range(8, 13):
 
 for i in range(14, 16):
     motor_and_taster_mcp.setDirection(i, motor_and_taster_mcp.DIR_OUTPUT)
-

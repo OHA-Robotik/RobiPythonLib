@@ -13,7 +13,7 @@ class LCD(I2cLcd):
         self.clear()
         self.backlight_off()
         self.display_off()
-        
+
     def on(self):
         self.backlight_on()
         self.display_on()

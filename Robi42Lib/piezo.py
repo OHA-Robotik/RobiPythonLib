@@ -51,7 +51,9 @@ class Tone:
 
 
 class SampleTones:
-    tones = sorted([Tone(n, int(f)) for n, f in naf.tones.items()], key=lambda x: x.freq)
+    tones = sorted(
+        [Tone(n, int(f)) for n, f in naf.tones.items()], key=lambda x: x.freq
+    )
 
     @staticmethod
     def get_tone(note: str) -> Tone:
