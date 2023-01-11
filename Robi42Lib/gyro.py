@@ -1,5 +1,4 @@
 from Robi42Lib.lib.imu import MPU6050
-from machine import Pin, I2C
 from time import sleep_ms
 from Robi42Lib.i2c_connections import gyro_and_led_i2c
 

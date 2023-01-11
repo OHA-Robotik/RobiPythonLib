@@ -248,7 +248,7 @@ class MCP23S17(object):
 
         command = MCP23S17.MCP23S17_CMD_READ | ((self.deviceID) << 1)
         self.ce.value(0)
-        data = self.spi.write(bytearray([command, register, 0]))
+        data = self.spi.read(bytearray([command, register, 0]))
         self.ce.value(1)
         return data[2]
 

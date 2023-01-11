@@ -3,7 +3,7 @@ from Robi42Lib.piezo import *
 from Robi42Lib.lcd import *
 from Robi42Lib.led import Led, Leds
 from Robi42Lib.motor import MotorLeft, MotorRight
-
+from Robi42Lib.buttons import Button
 
 class Robi42:
 
@@ -21,6 +21,11 @@ class Robi42:
         self.leds = Leds()
         self.motor_left = MotorLeft()
         self.motor_right = MotorRight()
+        self.center_button = Button(8)
+        self.left_button = Button(9)
+        self.right_button = Button(10)
+        self.up_button = Button(11)
+        self.down_button = Button(12)
 
     def __enter__(self):
         return self
