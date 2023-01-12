@@ -6,35 +6,15 @@ class MCP23S17:
     DIR_INPUT = 1
     DIR_OUTPUT = 0
 
-    SPI_INTCONA = 0x08
-    SPI_IODIRA = 0x00
-    SPI_IODIRB = 0x01
-    SPI_GPIO_A = 0x12
-    SPI_GPIO_B = 0x13
-
     MCP23S17_IODIRA = 0x00
     MCP23S17_IODIRB = 0x01
-    MCP23S17_IPOLA = 0x02
-    MCP23S17_IPOLB = 0x03
     MCP23S17_GPIOA = 0x12
     MCP23S17_GPIOB = 0x13
-    MCP23S17_OLATA = 0x14
-    MCP23S17_OLATB = 0x15
     MCP23S17_IOCON = 0x0A
-    MCP23S17_GPPUA = 0x0C
-    MCP23S17_GPPUB = 0x0D
 
     """Bit field flags as documentined in the technical data sheet at
     http://ww1.microchip.com/downloads/en/DeviceDoc/21952b.pdf
     """
-    IOCON_UNUSED = 0x01
-    IOCON_INTPOL = 0x02
-    IOCON_ODR = 0x04
-    IOCON_HAEN = 0x08
-    IOCON_DISSLW = 0x10
-    IOCON_SEQOP = 0x20
-    IOCON_MIRROR = 0x40
-    IOCON_BANK_MODE = 0x80
 
     IOCON_INIT = 0x00  # IOCON_BANK_MODE = 0, IOCON_HAEN = 0 address pins disabled
 
@@ -52,8 +32,8 @@ class MCP23S17:
         self._GPIOB = 0x00
         self._IODIRA = 0xFF
         self._IODIRB = 0xFF
-        self._GPPUA = 0x00
-        self._GPPUB = 0x00
+
+        self.cs.on()
 
     def open(self):
         self.is_open = True
@@ -112,16 +92,16 @@ class MCP23S17:
         else:
             self._GPIOB = data
 
-    def digital_read(self, pin: int):
+    def digital_read(self, pin: int) -> bool:
         assert self.is_open and pin < 16
 
         if pin < 8:
             self._GPIOA = self.read_register(self.MCP23S17_GPIOA)
-            return int((self._GPIOA & (1 << pin)) != 0)
+            return (self._GPIOA & (1 << pin)) != 0
 
         self._GPIOB = self.read_register(self.MCP23S17_GPIOB)
         pin &= 0x07
-        return int((self._GPIOB & (1 << pin)) != 0)
+        return (self._GPIOB & (1 << pin)) != 0
 
     def write_register(self, register: int, value):
         assert self.is_open
@@ -139,4 +119,4 @@ class MCP23S17:
         self.spi.write_readinto(txdata, rxdata)
         self.cs.on()
 
-        return rxdata[2]
+        return rxdata[0]
