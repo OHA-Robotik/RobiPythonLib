@@ -40,21 +40,21 @@ class Led:
         self.off()
 
     def on(self):
-        led_and_extension_mcp.digitalWrite(self.led_num, 0)
+        led_and_extension_mcp.digital_write(self.led_num, 0)
         self.__state = 0
 
     def off(self):
-        led_and_extension_mcp.digitalWrite(self.led_num, 1)
+        led_and_extension_mcp.digital_write(self.led_num, 1)
         self.__state = 1
 
     def value(self, value: int):
         assert value == 0 or value == 1
-        led_and_extension_mcp.digitalWrite(self.led_num, value)
+        led_and_extension_mcp.digital_write(self.led_num, value)
         self.__state = value
 
     def toggle(self):
         self.__state ^= 1
-        led_and_extension_mcp.digitalWrite(self.__state)
+        led_and_extension_mcp.digital_write(self.__state)
 
     @property
     def state(self):

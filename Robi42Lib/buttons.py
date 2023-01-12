@@ -6,4 +6,4 @@ class Button:
         self.mcp_gpb = mcp_gpb
 
     def is_pressed(self) -> bool:
-        return motor_and_button_mcp.digitalRead(self.mcp_gpb)
+        return motor_and_button_mcp.digital_read(self.mcp_gpb)

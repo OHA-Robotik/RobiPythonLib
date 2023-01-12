@@ -12,23 +12,23 @@ class MotorLeft:
         self.set_direction(1)
 
     def enable(self):
-        motor_and_button_mcp.digitalWrite(14, 0)
+        motor_and_button_mcp.digital_write(14, 0)
 
     def disable(self):
-        motor_and_button_mcp.digitalWrite(14, 1)
+        motor_and_button_mcp.digital_write(14, 1)
 
     def set_freq(self, freq: int):
         self.step_pwm.freq(freq)
 
     def set_stepping_size(self, m0: bool, m1: bool, m2: bool):
         m0, m1, m2 = bool(m0), bool(m1), bool(m2)
-        motor_and_button_mcp.digitalWrite(0, m0)
-        motor_and_button_mcp.digitalWrite(1, m1)
-        motor_and_button_mcp.digitalWrite(2, m2)
+        motor_and_button_mcp.digital_write(0, m0)
+        motor_and_button_mcp.digital_write(1, m1)
+        motor_and_button_mcp.digital_write(2, m2)
 
     def set_direction(self, direction: bool):
         direction = bool(direction)
-        motor_and_button_mcp.digitalWrite(3, direction)
+        motor_and_button_mcp.digital_write(3, direction)
 
 
 class MotorRight:
@@ -41,20 +41,20 @@ class MotorRight:
         self.set_direction(0)
 
     def enable(self):
-        motor_and_button_mcp.digitalWrite(15, 0)
+        motor_and_button_mcp.digital_write(15, 0)
 
     def disable(self):
-        motor_and_button_mcp.digitalWrite(15, 1)
+        motor_and_button_mcp.digital_write(15, 1)
 
     def set_freq(self, freq: int):
         self.step_pwm.freq(freq)
 
     def set_stepping_size(self, m0: bool, m1: bool, m2: bool):
         m0, m1, m2 = bool(m0), bool(m1), bool(m2)
-        motor_and_button_mcp.digitalWrite(4, m0)
-        motor_and_button_mcp.digitalWrite(5, m1)
-        motor_and_button_mcp.digitalWrite(6, m2)
+        motor_and_button_mcp.digital_write(4, m0)
+        motor_and_button_mcp.digital_write(5, m1)
+        motor_and_button_mcp.digital_write(6, m2)
 
     def set_direction(self, direction: bool):
         direction = bool(direction)
-        motor_and_button_mcp.digitalWrite(7, direction)
+        motor_and_button_mcp.digital_write(7, direction)

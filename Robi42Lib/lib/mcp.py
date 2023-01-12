@@ -1,20 +1,17 @@
-class MCP23S17(object):
-    """This class provides an abstraction of the GPIO expander MCP23S17
-    for the Raspberry Pi.
-    It is depndent on the Python packages spidev, which can
-    be get from https://pypi.python.org/pypi/spidev.
-    """
+from machine import Pin, SPI
+
+
+class MCP23S17:
 
     DIR_INPUT = 1
     DIR_OUTPUT = 0
-    PULLUP_ENABLED = 1
-    PULLUP_DISABLED = 0
-    LEVEL_LOW = 0
-    LEVEL_HIGH = 1
 
-    """Register addresses (ICON.BANK = 0) as documentined in the technical data sheet at
-    http://ww1.microchip.com/downloads/en/DeviceDoc/21952b.pdf
-    """
+    SPI_INTCONA = 0x08
+    SPI_IODIRA = 0x00
+    SPI_IODIRB = 0x01
+    SPI_GPIO_A = 0x12
+    SPI_GPIO_B = 0x13
+
     MCP23S17_IODIRA = 0x00
     MCP23S17_IODIRB = 0x01
     MCP23S17_IPOLA = 0x02
@@ -44,224 +41,102 @@ class MCP23S17(object):
     MCP23S17_CMD_WRITE = 0x40
     MCP23S17_CMD_READ = 0x41
 
-    def __init__(self, ce=0, deviceID=0x00, spi_interface=None):
-        """Constructor
-        Initializes all attributes with 0.
-        Keyword arguments:
-        bus -- The SPI bus number
-        ce -- The chip-enable number for the SPI
-        deviceID -- The device ID of the component, i.e., the hardware address (default 0.0)
-        """
+    def __init__(self, cs: Pin, device_id: int, spi_interface: SPI) -> None:
+        self.cs = cs
         self.spi = spi_interface
-        self.ce = ce
+        self.is_open = False
+        self.write_command = self.MCP23S17_CMD_WRITE | (device_id << 1)
+        self.read_command = self.MCP23S17_CMD_READ | (device_id << 1)
+
         self._GPIOA = 0x00
         self._GPIOB = 0x00
         self._IODIRA = 0xFF
         self._IODIRB = 0xFF
         self._GPPUA = 0x00
         self._GPPUB = 0x00
-        self.deviceID = deviceID
-        self.isInitialized = False
 
     def open(self):
-        """Initializes the MCP23S17 with hardware-address access
-        and sequential operations mode.
-        """
-        self.isInitialized = True
-
-        self._writeRegister(MCP23S17.MCP23S17_IOCON, MCP23S17.IOCON_INIT)
+        self.is_open = True
+        self.write_register(self.MCP23S17_IOCON, self.IOCON_INIT)
 
     def close(self):
-        """Closes the SPI connection that the MCP23S17 component is using."""
-        self.isInitialized = False
+        self.is_open = False
 
-    def setDirection(self, pin, direction):
-        """Sets the direction for a given pin.
-        Parameters:
-        pin -- The pin index (0 - 15)
-        direction -- The direction of the pin (MCP23S17.DIR_INPUT, MCP23S17.DIR_OUTPUT)
-        """
-        assert pin < 16
-        assert (direction == MCP23S17.DIR_INPUT) or (direction == MCP23S17.DIR_OUTPUT)
-        assert self.isInitialized
+    def set_direction(self, pin: int, direction: bool):
+        assert self.is_open and pin < 16
+        direction = bool(direction)
 
         if pin < 8:
-            register = MCP23S17.MCP23S17_IODIRA
+            register = self.MCP23S17_IODIRA
             data = self._IODIRA
             noshifts = pin
         else:
-            register = MCP23S17.MCP23S17_IODIRB
+            register = self.MCP23S17_IODIRB
             noshifts = pin & 0x07
             data = self._IODIRB
 
-        if direction == MCP23S17.DIR_INPUT:
+        if direction:
             data |= 1 << noshifts
         else:
             data &= ~(1 << noshifts)
 
-        self._writeRegister(register, data)
+        self.write_register(register, data)
 
         if pin < 8:
             self._IODIRA = data
         else:
             self._IODIRB = data
 
-    def digitalRead(self, pin):
-        """Reads the logical level of a given pin.
-        Parameters:
-        pin -- The pin index (0 - 15)
-        Returns:
-         - MCP23S17.LEVEL_LOW, if the logical level of the pin is low,
-         - MCP23S17.LEVEL_HIGH, otherwise.
-        """
-        assert self.isInitialized
-        assert pin < 16
+    def digital_write(self, pin: int, level: bool):
+        assert self.is_open and pin < 16
+        level = bool(level)
 
         if pin < 8:
-            self._GPIOA = self._readRegister(MCP23S17.MCP23S17_GPIOA)
-            if (self._GPIOA & (1 << pin)) != 0:
-                return MCP23S17.LEVEL_HIGH
-            else:
-                return MCP23S17.LEVEL_LOW
-        else:
-            self._GPIOB = self._readRegister(MCP23S17.MCP23S17_GPIOB)
-            pin &= 0x07
-            if (self._GPIOB & (1 << pin)) != 0:
-                return MCP23S17.LEVEL_HIGH
-            else:
-                return MCP23S17.LEVEL_LOW
-
-    def digitalWrite(self, pin, level):
-        """Sets the level of a given pin.
-        Parameters:
-        pin -- The pin idnex (0 - 15)
-        level -- The logical level to be set (MCP23S17.LEVEL_LOW, MCP23S17.LEVEL_HIGH)
-        """
-        assert self.isInitialized
-        assert pin < 16
-        assert (level == MCP23S17.LEVEL_HIGH) or (level == MCP23S17.LEVEL_LOW)
-
-        if pin < 8:
-            register = MCP23S17.MCP23S17_GPIOA
+            register = self.MCP23S17_GPIOA
             data = self._GPIOA
             noshifts = pin
         else:
-            register = MCP23S17.MCP23S17_GPIOB
+            register = self.MCP23S17_GPIOB
             noshifts = pin & 0x07
             data = self._GPIOB
 
-        if level == MCP23S17.LEVEL_HIGH:
+        if level:
             data |= 1 << noshifts
         else:
             data &= ~(1 << noshifts)
 
-        self._writeRegister(register, data)
+        self.write_register(register, data)
 
         if pin < 8:
             self._GPIOA = data
         else:
             self._GPIOB = data
 
-    def setDirPORTA(self, data):
-        assert self.isInitialized
+    def digital_read(self, pin: int):
+        assert self.is_open and pin < 16
 
-        self._writeRegister(MCP23S17.MCP23S17_IODIRA, data)
-        self._IODIRA = data
+        if pin < 8:
+            self._GPIOA = self.read_register(self.MCP23S17_GPIOA)
+            return int((self._GPIOA & (1 << pin)) != 0)
 
-    def setDirPORTB(self, data):
-        assert self.isInitialized
+        self._GPIOB = self.read_register(self.MCP23S17_GPIOB)
+        pin &= 0x07
+        return int((self._GPIOB & (1 << pin)) != 0)
 
-        self._writeRegister(MCP23S17.MCP23S17_IODIRB, data)
-        self._IODIRA = data
+    def write_register(self, register: int, value):
+        assert self.is_open
 
-    def setPullupPORTA(self, data):
-        assert self.isInitialized
+        self.cs.off()
+        self.spi.write(bytearray([self.write_command, register, value]))
+        self.cs.on()
 
-        self._writeRegister(MCP23S17.MCP23S17_GPPUA, data)
-        self._GPPUA = data
+    def read_register(self, register: int) -> int:
+        assert self.is_open
 
-    def setPullupPORTB(self, data):
-        assert self.isInitialized
+        self.cs.off()
+        txdata = bytearray([self.read_command, register, 0])
+        rxdata = bytearray(len(txdata))
+        self.spi.write_readinto(txdata, rxdata)
+        self.cs.on()
 
-        self._writeRegister(MCP23S17.MCP23S17_GPPUB, data)
-        self._GPPUB = data
-
-    def readPORTA(self):
-        assert self.isInitialized
-
-        data = self._readRegister(MCP23S17.MCP23S17_GPIOA)
-        self._GPIOA = data
-        return data
-
-    def readPORTB(self):
-        assert self.isInitialized
-
-        data = self._readRegister(MCP23S17.MCP23S17_GPIOB)
-        self._GPIOB = data
-        return data
-
-    def writePORTA(self, data):
-        assert self.isInitialized
-
-        self._writeRegister(MCP23S17.MCP23S17_GPIOA, data)
-        self._GPIOA = data
-
-    def writePORTB(self, data):
-        assert self.isInitialized
-
-        self._writeRegister(MCP23S17.MCP23S17_GPIOB, data)
-        self._GPIOB = data
-
-    def writeGPIO(self, data):
-        """Sets the data port value for all pins.
-        Parameters:
-        data - The 16-bit value to be set.
-        """
-        assert self.isInitialized
-
-        self._GPIOA = data & 0xFF
-        self._GPIOB = data >> 8
-        self._writeRegisterWord(MCP23S17.MCP23S17_GPIOA, data)
-
-    def readGPIO(self):
-        """Reads the data port value of all pins.
-        Returns:
-         - The 16-bit data port value
-        """
-        assert self.isInitialized
-
-        data = self._readRegisterWord(MCP23S17.MCP23S17_GPIOA)
-        self._GPIOA = data & 0xFF
-        self._GPIOB = data >> 8
-        return data
-
-    def _writeRegister(self, register, value):
-        assert self.isInitialized
-
-        command = MCP23S17.MCP23S17_CMD_WRITE | ((self.deviceID) << 1)
-        self.ce.value(0)
-        self.spi.write(bytearray([command, register, value]))
-        self.ce.value(1)
-
-    def _readRegister(self, register):
-        assert self.isInitialized
-
-        command = MCP23S17.MCP23S17_CMD_READ | ((self.deviceID) << 1)
-        self.ce.value(0)
-        data = self.spi.read(bytearray([command, register, 0]))
-        self.ce.value(1)
-        return data[2]
-
-    def _readRegisterWord(self, register):
-        assert self.isInitialized
-
-        buffer = [0, 0]
-        buffer[0] = self._readRegister(register)
-        buffer[1] = self._readRegister(register + 1)
-        return (buffer[1] << 8) | buffer[0]
-
-    def _writeRegisterWord(self, register, data):
-        assert self.isInitialized
-
-        self._writeRegister(register, data & 0xFF)
-        self._writeRegister(register + 1, data >> 8)
+        return rxdata[2]
