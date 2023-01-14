@@ -6,17 +6,13 @@ class MCP23S17:
     DIR_INPUT = 1
     DIR_OUTPUT = 0
 
-    MCP23S17_IODIRA = 0x00
-    MCP23S17_IODIRB = 0x01
+    MCP23S17_IODIRA = 0
+    MCP23S17_IODIRB = 1
     MCP23S17_GPIOA = 0x12
     MCP23S17_GPIOB = 0x13
     MCP23S17_IOCON = 0x0A
 
-    """Bit field flags as documentined in the technical data sheet at
-    http://ww1.microchip.com/downloads/en/DeviceDoc/21952b.pdf
-    """
-
-    IOCON_INIT = 0x00  # IOCON_BANK_MODE = 0, IOCON_HAEN = 0 address pins disabled
+    IOCON_INIT = 0
 
     MCP23S17_CMD_WRITE = 0x40
     MCP23S17_CMD_READ = 0x41
@@ -28,8 +24,8 @@ class MCP23S17:
         self.write_command = self.MCP23S17_CMD_WRITE | (device_id << 1)
         self.read_command = self.MCP23S17_CMD_READ | (device_id << 1)
 
-        self._GPIOA = 0x00
-        self._GPIOB = 0x00
+        self._GPIOA = 0
+        self._GPIOB = 0
         self._IODIRA = 0xFF
         self._IODIRB = 0xFF
 
@@ -113,9 +109,9 @@ class MCP23S17:
     def read_register(self, register: int) -> int:
         assert self.is_open
 
-        self.cs.off()
         txdata = bytearray([self.read_command, register, 0])
-        rxdata = bytearray(len(txdata))
+        rxdata = bytearray(3)
+        self.cs.off()
         self.spi.write_readinto(txdata, rxdata)
         self.cs.on()
 
