@@ -3,26 +3,24 @@ from time import sleep
 
 with Robi42() as r:
 
-    r.lcd.on()
-    for i in range(1, 6):
-        r.lcd.putstr(f"Start in {5-i}s")
-        sleep(1)
-        r.lcd.clear()
-    r.lcd.off()
-
-    r.motor_left.enable()
-    # r.motor_right.enable()
-
-    # r.motor_right.set_freq(10000)
-    r.motor_left.set_freq(10000)
-
-    """
-    for i in range(20_000, 150_000, 1000):
-        r.motor_right.set_freq(i)
-        r.motor_left.set_freq(i)
-        print("Freq:", i)
-        sleep(0.1)
-    """
+    r.motors.set_freq(10000)
 
     while True:
-        sleep(1)
+
+        r.motors.set_direction(r.motors.dir_forward)
+
+        if r.buttons.left.is_pressed():
+            r.motors.left.disable()
+            r.motors.right.enable()
+        elif r.buttons.right.is_pressed():
+            r.motors.right.disable()
+            r.motors.left.enable()
+        elif r.buttons.up.is_pressed():
+            r.motors.enable()
+        elif r.buttons.down.is_pressed():
+            r.motors.set_direction(r.motors.dir_backward)
+            r.motors.enable()
+        else:
+            r.motors.disable()
+
+        sleep(0.1)

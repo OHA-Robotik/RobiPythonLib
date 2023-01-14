@@ -3,7 +3,7 @@ from Robi42Lib.lib.mcp import MCP23S17
 
 # Led and extension mcp
 
-led_and_extension_mcp = MCP23S17(led_and_motor_cs, 0x00, led_and_motor_spi)
+led_and_extension_mcp = MCP23S17(led_and_motor_cs, 1, led_and_motor_spi)
 led_and_extension_mcp.open()
 
 for i in range(16):
@@ -12,7 +12,7 @@ for i in range(16):
 
 # Motor and button mcp
 
-motor_and_button_mcp = MCP23S17(led_and_motor_cs, 0x01, led_and_motor_spi
+motor_and_button_mcp = MCP23S17(led_and_motor_cs, 0, led_and_motor_spi
 )
 motor_and_button_mcp.open()
 

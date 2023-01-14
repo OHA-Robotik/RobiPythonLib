@@ -64,12 +64,20 @@ class Led:
 class Leds:
     def __init__(self) -> None:
         self.leds = [Led(i) for i in LED_NUMS_CLOCKWISE]
+        self.blinker_front_left = self.leds[0]
+        self.headlight_left = self.leds[1]
+        self.headlight_right = self.leds[2]
+        self.blinker_front_right = self.leds[3]
+        self.blinker_back_right = self.leds[4]
+        self.backlight_right = self.leds[5]
+        self.backlight_left = self.leds[6]
+        self.blinker_back_left = self.leds[7]
 
-    def all_on(self):
+    def on(self):
         for led in self.leds:
             led.on()
 
-    def all_off(self):
+    def off(self):
         for led in self.leds:
             led.off()
 

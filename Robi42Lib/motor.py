@@ -57,4 +57,34 @@ class MotorRight:
 
     def set_direction(self, direction: bool):
         direction = bool(direction)
-        motor_and_button_mcp.digital_write(7, direction)
+        motor_and_button_mcp.digital_write(7, not direction)
+
+
+class Motors:
+
+    dir_forward = True
+    dir_backward = False
+
+    def __init__(self) -> None:
+        self.left = MotorLeft()
+        self.right = MotorRight()
+
+    def disable(self):
+        self.left.disable()
+        self.right.disable()
+
+    def enable(self):
+        self.left.enable()
+        self.right.enable()
+
+    def set_freq(self, freq: int):
+        self.left.set_freq(freq)
+        self.right.set_freq(freq)
+
+    def set_stepping_size(self, m0: bool, m1: bool, m2: bool):
+        self.left.set_stepping_size(m0, m1, m2)
+        self.right.set_stepping_size(m0, m1, m2)
+
+    def set_direction(self, direction: bool):
+        self.left.set_direction(direction)
+        self.right.set_direction(direction)

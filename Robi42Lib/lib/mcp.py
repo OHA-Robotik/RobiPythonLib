@@ -70,6 +70,7 @@ class MCP23S17(object):
         self.isInitialized = True
 
         self._writeRegister(MCP23S17.MCP23S17_IOCON, MCP23S17.IOCON_INIT)
+        self._writeRegister(MCP23S17.MCP23S17_IOCON, MCP23S17.IOCON_HAEN)
 
     def close(self):
         """Closes the SPI connection that the MCP23S17 component is using."""
