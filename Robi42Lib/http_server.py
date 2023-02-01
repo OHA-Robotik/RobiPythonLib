@@ -13,21 +13,16 @@ class HttpServer:
         wlan.active(True)
         wlan.connect(ssid, pswd)
 
-        # Wait for connect or fail
-        for _ in range(5):
-            if wlan.status() < 0 or wlan.status() >= 3:
-                break
-            time.sleep(1)
+        assert wlan.isconnected(), "Failed to connect to wifi"
 
-        # Handle connection error
-        if wlan.status() != 3:
-            raise RuntimeError("wifi connection failed")
+        sta_if = network.WLAN(network.STA_IF)
 
-        self.ip = wlan.ifconfig()[0]
+        self.ip = sta_if.ifconfig()[0]
 
     def _open_socket(self):
-        address = (self.ip, 80)
+        address = socket.getaddrinfo(self.ip, 80)[0][-1]
         connection = socket.socket()
+        connection.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         connection.bind(address)
         connection.listen(1)
         self.connection = connection
@@ -41,10 +36,11 @@ class HttpServer:
     def _serve(self):
         self._open_socket()
         while True:
-            print("1")
+
             client = self.connection.accept()[0]
             request = client.recv(1024)
             request = str(request)
+
             try:
                 request = request.split()[1]
             except IndexError:
@@ -57,3 +53,9 @@ class HttpServer:
 
             client.send(html)
             client.close()
+
+
+if __name__ == "__main__":
+    h = HttpServer("Sasnas", "Carl1234")
+    h.start_serving()
+    h.edit_response_html("hello", "HELLO")

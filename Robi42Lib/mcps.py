@@ -12,8 +12,7 @@ for i in range(16):
 
 # Motor and button mcp
 
-motor_and_button_mcp = MCP23S17(led_and_motor_cs, 0, led_and_motor_spi
-)
+motor_and_button_mcp = MCP23S17(led_and_motor_cs, 0, led_and_motor_spi)
 motor_and_button_mcp.open()
 
 for i in range(8):
