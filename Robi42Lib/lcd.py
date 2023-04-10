@@ -2,6 +2,7 @@
 
 from Robi42Lib.lib.machine_i2c_lcd import I2cLcd
 from Robi42Lib.i2c_connections import laser_and_conns_i2c
+from time import sleep
 
 
 class LCD(I2cLcd):
@@ -17,3 +18,12 @@ class LCD(I2cLcd):
     def on(self):
         self.backlight_on()
         self.display_on()
+
+    def put_large_str(self, s: str, delay: int = 1):
+        for i in range(0, len(s), 32):
+            self.clear()
+            if i + 32 < len(s):
+                self.putstr(s[i : i + 32])
+            else:
+                self.putstr(s[i:])
+            sleep(delay)

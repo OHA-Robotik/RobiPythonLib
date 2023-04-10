@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pi Control</title>
+</head>
+
+<style>
+    .range-width {
+        width: 100%;
+        display: block;
+    }
+
+    .button-style {
+        width: 100%;
+        height: 100px;
+        display: block;
+
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
+    .grid-container {
+        align-content: stretch;
+        display: grid;
+    }
+</style>
+
+
+
+<body>
+    <h1>Pi Remote Control</h1>
+
+    <p id="statusP">
+        Status: Waiting for input
+    </p>
+    <div class="grid-container">
+        <button class="button-style" onclick="submit('r.motors.set_freq('+driveSpeedRange.value+')')">
+            Activate
+        </button>
+        <button class="button-style" id="ForwardButton"
+            onmousedown="submit('r.motors.set_freq('+driveSpeedRange.value+')%5Cr.motors.set_direction(1)%5Cr.motors.enable()')"
+            onmouseup="submit('r.motors.disable()')"
+            ontouchstart="submit('r.motors.set_freq('+driveSpeedRange.value+')%5Cr.motors.set_direction(1)%5Cr.motors.enable()')"
+            ontouchend="submit('r.motors.disable()')">
+            Forward
+        </button>
+        <button class="button-style" id="BackwardButton"
+            onmousedown="submit('r.motors.set_freq('+driveSpeedRange.value+')%5Cr.motors.set_direction(0)%5Cr.motors.enable()')"
+            onmouseup="submit('r.motors.disable()')"
+            ontouchstart="submit('r.motors.set_freq('+driveSpeedRange.value+')%5Cr.motors.set_direction(0)%5Cr.motors.enable()')"
+            ontouchend="submit('r.motors.disable()')">
+            Backward
+        </button>
+        <button class="button-style" id="LeftButton"
+            onmousedown="submit('r.motors.set_freq('+turnSpeedRange.value+')%5Cr.motors.left.set_direction(0)%5Cr.motors.right.set_direction(1)%5Cr.motors.enable()')"
+            onmouseup="submit('r.motors.disable()')"
+            ontouchstart="submit('r.motors.set_freq('+turnSpeedRange.value+')%5Cr.motors.left.set_direction(0)%5Cr.motors.right.set_direction(1)%5Cr.motors.enable()')"
+            ontouchend="submit('r.motors.disable()')">
+            Left
+        </button>
+        <button class="button-style" id="RightButton"
+            onmousedown="submit('r.motors.set_freq('+turnSpeedRange.value+')%5Cr.motors.left.set_direction(1)%5Cr.motors.right.set_direction(0)%5Cr.motors.enable()')"
+            onmouseup="submit('r.motors.disable()')"
+            ontouchstart="submit('r.motors.set_freq('+turnSpeedRange.value+')%5Cr.motors.left.set_direction(1)%5Cr.motors.right.set_direction(0)%5Cr.motors.enable()')"
+            ontouchend="submit('r.motors.disable()')">
+            Right
+        </button>
+        <button class="button-style" id="StopButton" onmousedown="submit('r.motors.disable()')">
+            Stop
+        </button>
+    </div>
+
+    <div>
+        <button class="button-style"
+            onclick="submit('r.motors.set_freq('+driveSpeedRange.value+')%5Cr.motors.set_direction(1)%5Cr.motors.enable()')">
+            Toggle Forward
+        </button>
+    </div>
+
+    <div>
+        <label>
+            Drive Speed:
+            <input type="range" min="1000" max="100000" value="10000" step="500" id="driveSpeedRange"
+                class="range-width"
+                oninput="this.nextElementSibling.value = this.value; submit('r.motors.set_freq('+driveSpeedRange.value+')')">
+            <output>10000</output>
+    </div>
+
+    <div>
+        <label>
+            Turn Speed:
+            <input type="range" min="1000" max="20000" value="4000" step="500" id="turnSpeedRange" class="range-width"
+                oninput="this.nextElementSibling.value = this.value; submit('r.motors.set_freq('+turnSpeedRange.value+')')">
+            <output>4000</output>
+    </div>
+
+</body>
+
+<script type="text/javascript">
+
+    const statusP = document.getElementById("statusP");
+    /*
+        const ForwardButton = document.getElementById("ForwardButton");
+        const BackwardButton = document.getElementById("BackwardButton");
+        const LeftButton = document.getElementById("LeftButton");
+        const RightButton = document.getElementById("RightButton");
+    
+        ForwardButton.addEventListener("touchstart", submit('r.motors.set_freq(' + driveSpeedRange.value + ')%5Cr.motors.set_direction(1)%5Cr.motors.enable()'));
+        BackwardButton.addEventListener("touchstart", submit('r.motors.set_freq(' + driveSpeedRange.value + ')%5Cr.motors.set_direction(0)%5Cr.motors.enable()'))
+        LeftButton.addEventListener("touchstart", submit('r.motors.set_freq(' + turnSpeedRange.value + ')%5Cr.motors.left.set_direction(0)%5Cr.motors.right.set_direction(1)%5Cr.motors.enable()'));
+        RightButton.addEventListener("touchstart", submit('r.motors.set_freq(' + turnSpeedRange.value + ')%5Cr.motors.left.set_direction(1)%5Cr.motors.right.set_direction(0)%5Cr.motors.enable()'));
+    
+        ForwardButton.addEventListener("touchend", submit('r.motors.disable()'));
+        BackwardButton.addEventListener("touchend", submit('r.motors.disable()'));
+        LeftButton.addEventListener("touchend", submit('r.motors.disable()'));
+        RightButton.addEventListener("touchend", submit('r.motors.disable()'));
+    
+    */
+    async function submit(command) {
+        statusP.innerHTML = "Status: Sending...";
+        try {
+            await fetch('http://192.168.137.51/' + command);
+        }
+        catch { }
+        statusP.innerHTML = "Status: Waiting for input";
+    }
+
+</script>
+
+</html>
