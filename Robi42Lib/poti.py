@@ -13,5 +13,5 @@ class Poti:
         if raw < 50:
             raw = 0
         elif raw > 974:
-            raw = 974
-        return raw / 974
+            raw = 1024
+        return raw / 1024
