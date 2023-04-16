@@ -4,6 +4,7 @@ from Robi42Lib.lcd import *
 from Robi42Lib.led import Leds
 from Robi42Lib.motor import Motors
 from Robi42Lib.buttons import Buttons
+from Robi42Lib.laser_sensor import LaserSensor
 from time import sleep
 
 
@@ -15,6 +16,7 @@ class Robi42:
         self.leds = Leds()
         self.motors = Motors()
         self.buttons = Buttons()
+        self.laser_sensor = LaserSensor()
 
     def __enter__(self):
         return self

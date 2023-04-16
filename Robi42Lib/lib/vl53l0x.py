@@ -653,7 +653,6 @@ class VL53L0X:
         return True
 
     def perform_single_ref_calibration(self, vhv_init_byte):
-
         # Pico MicroPython doesn't have a Chrono class, so the line below is commented out
         # chrono = Timer.Chrono()
 
@@ -662,7 +661,6 @@ class VL53L0X:
         # Instead of using the chrono class, I'll just capture the current time
         chrono_start = utime.ticks_ms()
         while self._register((RESULT_INTERRUPT_STATUS & 0x07) == 0):
-
             # elapsed time is juse the current time minus the start time.
             time_elapsed = utime.ticks_ms() - chrono_start
             if time_elapsed > _IO_TIMEOUT:
