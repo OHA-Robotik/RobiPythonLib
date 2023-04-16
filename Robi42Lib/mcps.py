@@ -1,5 +1,5 @@
 from Robi42Lib.spi_connections import *
-from Robi42Lib.lib.mcp import MCP23S17
+from Robi42Lib.lib.mcp23S17 import MCP23S17
 
 # Led and extension mcp
 
