@@ -14,4 +14,4 @@ class LaserSensor:
         Takes 20ms for cooldown.
         """
         sleep_ms(20)
-        return self.__vl53l0x.ping()
+        return self.__vl53l0x.ping() - 60
