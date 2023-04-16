@@ -1,5 +1,6 @@
 from Robi42Lib.spi_connections import *
 from Robi42Lib.lib.mcp23S17 import MCP23S17
+from Robi42Lib.lib.mcp3008 import MCP3008
 
 # Led and extension mcp
 
@@ -24,3 +25,8 @@ for i in range(8, 13):
 
 for i in range(14, 16):
     motor_and_button_mcp.set_direction(i, motor_and_button_mcp.DIR_OUTPUT)
+
+
+# Analog mcp
+
+analog_mcp = MCP3008(analog_spi, analog_cs, ref_voltage=1.8)
