@@ -1,5 +1,6 @@
 from Robi42Lib.robi42 import Robi42
 from time import sleep
+from Robi42Lib.AdminMenu.hardware_test import *
 
 
 class ButtonInput:
@@ -13,14 +14,24 @@ class ButtonInput:
     def wait_for_input(robi: Robi42) -> int:
         while True:
             if robi.buttons.left.is_pressed():
+                while robi.buttons.left.is_pressed():
+                    sleep(0.1)
                 return ButtonInput.left
             if robi.buttons.right.is_pressed():
+                while robi.buttons.right.is_pressed():
+                    sleep(0.1)
                 return ButtonInput.right
             if robi.buttons.center.is_pressed():
+                while robi.buttons.center.is_pressed():
+                    sleep(0.1)
                 return ButtonInput.center
             if robi.buttons.up.is_pressed():
+                while robi.buttons.up.is_pressed():
+                    sleep(0.1)
                 return ButtonInput.up
             if robi.buttons.down.is_pressed():
+                while robi.buttons.down.is_pressed():
+                    sleep(0.1)
                 return ButtonInput.down
             sleep(0.1)
 
@@ -28,13 +39,18 @@ class ButtonInput:
 class Menu:
 
     header: str
+    content: str
 
-    def __init__(self, robi: Robi42, origin: "Menu" | None):
+    def __init__(self, header: str, content: str, robi: Robi42, origin: "Menu" | None):
+        self.header = header
+        self.content = content
         self.robi = robi
         self.origin = origin
 
     def goto(self):
-        raise NotImplementedError()
+        self.robi.lcd.clear()
+        self.robi.lcd.putstr(self.content)
+        self.main_loop()
 
     def main_loop(self):
         raise NotImplementedError()
@@ -43,23 +59,27 @@ class Menu:
 class SubmenuList:
     selection = 0
 
-    def __init__(self, robi: Robi42, origin: Menu, submenus: list[Menu]):
+    def __init__(self, header: str, robi: Robi42, origin: Menu, submenus: list[Menu]):
+        self.header = header
         self.robi = robi
         self.origin = origin
         self.submenus = submenus
         self.max_idx = len(submenus) - 1
-        self.submenu_headers = list(submenus.keys())
-
-        robi.lcd.clear()
-
-        if self.max_idx >= 0:
-            robi.lcd.putstr(self.submenu_headers[0])
-
-            if self.max_idx > 0:
-                robi.lcd.putstr("\n" + self.submenu_headers[1])
+        self.submenu_headers = [s.header for s in submenus]
 
     def goto(self):
+        self.robi.lcd.clear()
+        self.show_cursor()
+        self.scroll_to_selection()
         self.main_loop()
+
+    def show_cursor(self):
+        self.robi.lcd.show_cursor()
+        self.robi.lcd.blink_cursor_on()
+
+    def hide_cursor(self):
+        self.robi.lcd.hide_cursor()
+        self.robi.lcd.blink_cursor_off()
 
     def main_loop(self):
         while True:
@@ -70,32 +90,43 @@ class SubmenuList:
 
             if inp == ButtonInput.down:
                 self.selection += 1
+                self.correct_selection()
+                self.scroll_to_selection()
             elif inp == ButtonInput.up:
                 self.selection -= 1
-
-                if self.selection < 0:
-                    self.selection = self.max_idx
-                elif self.selection > self.max_idx:
-                    self.selection = 0
-
-            elif inp == ButtonInput.left:
+                self.correct_selection()
+                self.scroll_to_selection()
+            elif inp == ButtonInput.left and self.origin is not None:
+                self.hide_cursor()
                 self.origin.goto()
+            elif inp == ButtonInput.center:
+                self.hide_cursor()
+                self.submenus[self.selection].goto()
+
+    def correct_selection(self):
+        if self.selection < 0:
+            self.selection = self.max_idx
+        elif self.selection > self.max_idx:
+            self.selection = 0
+
+    def scroll_to_selection(self):
+
+        self.robi.lcd.clear()
+
+        if self.max_idx >= self.selection:
+            self.robi.lcd.putstr(self.submenu_headers[self.selection])
+
+            if self.max_idx > self.selection:
+                self.robi.lcd.move_to(0, 1)
+                self.robi.lcd.putstr(self.submenu_headers[self.selection + 1])
 
     def highlight_selection(self):
-        self.robi.lcd.show_cursor()
-        self.robi.lcd.blink_cursor_on()
         self.robi.lcd.move_to(15, self.selection & 1)
 
 
 class TestMenu(Menu):
     def __init__(self, robi: Robi42, origin: Menu):
-        super().__init__(robi, origin)
-        self.header = "Test Menu"
-
-    def goto(self):
-        self.robi.lcd.clear()
-        self.robi.lcd.putstr("This is the test menu")
-        TestMenu.main_loop()
+        super().__init__("Test Menu", "This is a test menu", robi, origin)
 
     def main_loop(self):
         while True:
@@ -107,26 +138,10 @@ class TestMenu(Menu):
             sleep(0.1)
 
 
-class MainMenu(Menu):
-    submenus = [TestMenu, TestMenu]
-
+class MainMenu(SubmenuList):
     def __init__(self, robi: Robi42):
-        super().__init__(robi, None)
+        super().__init__("Main Menu", robi, None, [HardwareTestMenu(robi, self)])
         robi.lcd.on()
-
-    def goto(self):
-        self.robi.lcd.clear()
-        self.robi.lcd.putstr("This is the main menu")
-        MainMenu.main_loop()
-
-    def main_loop(self):
-        while True:
-            inp = ButtonInput.wait_for_input(self.robi)
-
-            if inp == ButtonInput.center:
-                SubmenuList(self.robi, self.submenus, self).goto()
-
-            sleep(0.1)
 
 
 if __name__ == "__main__":
@@ -134,9 +149,6 @@ if __name__ == "__main__":
         enable_gyro=False,
         enable_ir_sensors=False,
         enable_laser_sensor=False,
-        enable_leds=False,
         enable_motors=False,
-        enable_piezo=False,
-        enable_poti=False,
     )
     MainMenu(r).goto()
