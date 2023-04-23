@@ -52,6 +52,12 @@ class Robi42:
         return self
 
     def __exit__(self, exc_type: type, exc_val, exc_tb):
+        self.stop(exc_type, exc_val, exc_tb)
+
+    def __del__(self):
+        self.stop()
+
+    def stop(self, exc_type: type = None, exc_val=None, exc_tb=None):
         self._display_exception(exc_type, exc_val, exc_tb)
 
         if self.enable_piezo:
