@@ -1,6 +1,5 @@
 from Robi42Lib.robi42 import Robi42
 from time import sleep
-from Robi42Lib.AdminMenu.hardware_test import *
 
 
 class ButtonInput:
@@ -59,7 +58,13 @@ class Menu:
 class SubmenuList:
     selection = 0
 
-    def __init__(self, header: str, robi: Robi42, origin: Menu, submenus: list[Menu]):
+    def __init__(
+        self,
+        header: str,
+        robi: Robi42,
+        origin: Menu,
+        submenus: list[Menu | "SubmenuList"],
+    ):
         self.header = header
         self.robi = robi
         self.origin = origin
@@ -96,12 +101,14 @@ class SubmenuList:
                 self.selection -= 1
                 self.correct_selection()
                 self.scroll_to_selection()
-            elif inp == ButtonInput.left and self.origin is not None:
-                self.hide_cursor()
-                self.origin.goto()
             elif inp == ButtonInput.center:
                 self.hide_cursor()
                 self.submenus[self.selection].goto()
+                self.scroll_to_selection()
+            elif inp == ButtonInput.left and self.origin is not None:
+                break
+
+        self.hide_cursor()
 
     def correct_selection(self):
         if self.selection < 0:
@@ -110,15 +117,18 @@ class SubmenuList:
             self.selection = 0
 
     def scroll_to_selection(self):
-
         self.robi.lcd.clear()
 
-        if self.max_idx >= self.selection:
+        if self.selection % 2 == 1:
+            self.robi.lcd.putstr(self.submenu_headers[self.selection - 1])
+            self.robi.lcd.move_to(0, 1)
             self.robi.lcd.putstr(self.submenu_headers[self.selection])
+            return
 
-            if self.max_idx > self.selection:
-                self.robi.lcd.move_to(0, 1)
-                self.robi.lcd.putstr(self.submenu_headers[self.selection + 1])
+        self.robi.lcd.putstr(self.submenu_headers[self.selection])
+        if self.selection < self.max_idx:
+            self.robi.lcd.move_to(0, 1)
+            self.robi.lcd.putstr(self.submenu_headers[self.selection + 1])
 
     def highlight_selection(self):
         self.robi.lcd.move_to(15, self.selection & 1)
@@ -129,26 +139,29 @@ class TestMenu(Menu):
         super().__init__("Test Menu", "This is a test menu", robi, origin)
 
     def main_loop(self):
-        while True:
-            inp = ButtonInput.wait_for_input(self.robi)
-
-            if inp == ButtonInput.left:
-                self.origin.goto()
-
-            sleep(0.1)
+        while ButtonInput.wait_for_input(self.robi) != ButtonInput.left:
+            pass
 
 
 class MainMenu(SubmenuList):
     def __init__(self, robi: Robi42):
-        super().__init__("Main Menu", robi, None, [HardwareTestMenu(robi, self)])
+        from Robi42Lib.AdminMenu.hardware_test import HardwareTestMenu
+        from Robi42Lib.AdminMenu.i2c_scanner import HardwareScannerMenu
+
+        super().__init__(
+            "Main Menu",
+            robi,
+            None,
+            [HardwareTestMenu(robi, self), HardwareScannerMenu(robi, self)],
+        )
         robi.lcd.on()
 
 
 if __name__ == "__main__":
-    r = Robi42(
+    with Robi42(
         enable_gyro=False,
         enable_ir_sensors=False,
         enable_laser_sensor=False,
         enable_motors=False,
-    )
-    MainMenu(r).goto()
+    ) as r:
+        MainMenu(r).goto()
