@@ -1,4 +1,5 @@
 from Robi42Lib.mcps import motor_and_button_mcp
+from Robi42Lib.piopwm import PIOPWM
 from machine import Pin, PWM
 from time import sleep_ms
 
@@ -8,9 +9,8 @@ class MotorLeft:
 
     def __init__(self) -> None:
         self.disable()
-        self.step_pwm = PWM(Pin(20, Pin.OUT))
+        self.step_pwm = PIOPWM(20, 420)
         self.set_freq(420)
-        self.step_pwm.duty_u16(32768)
         self.set_stepping_size(1, 1, 1)
         self.set_direction(1)
 
@@ -53,10 +53,12 @@ class MotorLeft:
 
 
 class MotorRight:
+    current_freq: int
+
     def __init__(self) -> None:
         self.disable()
         self.step_pwm = PWM(Pin(21, Pin.OUT))
-        self.step_pwm.freq(420)
+        self.set_freq(420)
         self.step_pwm.duty_u16(32768)
         self.set_stepping_size(1, 1, 1)
         self.set_direction(1)
@@ -68,6 +70,7 @@ class MotorRight:
         motor_and_button_mcp.digital_write(15, 1)
 
     def set_freq(self, freq: int):
+        self.current_freq = freq;
         self.step_pwm.freq(freq)
 
     def set_stepping_size(self, m0: bool, m1: bool, m2: bool):
