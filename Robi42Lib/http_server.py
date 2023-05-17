@@ -1,6 +1,5 @@
 import socket
 import network
-import time
 import _thread
 
 

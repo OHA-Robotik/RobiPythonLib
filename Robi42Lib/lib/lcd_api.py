@@ -67,7 +67,7 @@ class LcdApi:
         self.display_on()
 
     def clear(self):
-        """Clears the LCD display and moves the cursor to the top left
+        """Clears the LCD and moves the cursor to the top left
         corner.
         """
         self.hal_write_command(self.LCD_CLR)
@@ -213,7 +213,7 @@ class LcdApi:
     # This is a default implementation of hal_sleep_us which is suitable
     # for most micropython implementations. For platforms which don't
     # support `time.sleep_us()` they should provide their own implementation
-    # of hal_sleep_us in their hal layer and it will be used instead.
+    # of hal_sleep_us in their hal layer, and it will be used instead.
     def hal_sleep_us(self, usecs):
         """Sleep for some time (given in microseconds)."""
         time.sleep_us(

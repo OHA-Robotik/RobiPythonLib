@@ -100,7 +100,7 @@ class Robi42:
     def stop(self, exc_type: type = None, exc_val=None, exc_tb=None):
 
         if self.enable_piezo:
-            self.piezo._turn_off()
+            self.piezo.turn_off()
         if self.enable_leds:
             self.leds.off()
         if self.enable_motors:

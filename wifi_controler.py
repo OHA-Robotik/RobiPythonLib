@@ -4,7 +4,6 @@
 import time
 import network
 import socket
-from machine import Pin
 from Robi42Lib.robi42 import Robi42
 
 
@@ -63,7 +62,7 @@ with Robi42() as r:
             
             try:
                 request = str(request)
-                command = request[7 : request.index(" HTTP")].replace("%5C", "\n")
+                command = request[7: request.index(" HTTP")].replace("%5C", "\n")
             except Exception:
                 continue
 

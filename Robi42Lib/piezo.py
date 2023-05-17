@@ -36,7 +36,7 @@ class Piezo:
             await sleep_ms_async(tone.duration_ms)
         self.piezo.duty_u16(0)
 
-    def _turn_off(self):
+    def turn_off(self):
         self.piezo.duty_u16(0)
         self.piezo.deinit()
 

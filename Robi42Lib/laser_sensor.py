@@ -1,4 +1,3 @@
-from machine import I2C, Pin
 from Robi42Lib.lib.vl53l0x import VL53L0X
 from time import sleep_ms
 from Robi42Lib.i2c_connections import laser_and_conns_i2c

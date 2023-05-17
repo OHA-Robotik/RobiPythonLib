@@ -430,10 +430,10 @@ class VL53L0X:
         return True
 
     def decode_Vcsel_period(self, reg_val):
-        return ((reg_val) + 1) << 1
+        return (reg_val + 1) << 1
 
     def encode_Vcsel_period(self, period_pclks):
-        return ((period_pclks) >> 1) - 1
+        return (period_pclks >> 1) - 1
 
     def set_Vcsel_pulse_period(self, type, period_pclks):
         vcsel_period_reg = self.encode_Vcsel_period(period_pclks)
@@ -587,14 +587,13 @@ class VL53L0X:
         return ((timeout_period_us * 1000) + (macro_period_ns / 2)) / macro_period_ns
 
     def calc_macro_period(self, vcsel_period_pclks):
-        return ((2304 * (vcsel_period_pclks) * 1655) + 500) / 1000
+        return ((2304 * vcsel_period_pclks * 1655) + 500) / 1000
 
     def decode_timeout(self, reg_val):
         return ((reg_val & 0x00FF) << ((reg_val & 0xFF00) >> 8)) + 1
 
     def encode_timeout(self, timeout_mclks):
         timeout_mclks = int(timeout_mclks)
-        ls_byte = 0
         ms_byte = 0
 
         if timeout_mclks > 0:

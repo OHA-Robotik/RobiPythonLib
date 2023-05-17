@@ -10,8 +10,6 @@ Thanks, @Raspberry_Pi and @Adafruit, for all you've given us!
 Stolen from https://github.com/romilly/pico-code/blob/master/src/pico_code/pico/mcp3008/mcp3008.py
 """
 
-import machine
-
 
 class MCP3008:
 
@@ -45,8 +43,8 @@ class MCP3008:
             voltage in range [0, 1023] where 1023 = VREF (3V3)
         """
 
-        self.cs.value(0) # select
+        self.cs.value(0)  # select
         self._out_buf[1] = ((not is_differential) << 7) | (pin << 4)
         self._spi.write_readinto(self._out_buf, self._in_buf)
-        self.cs.value(1) # turn off
+        self.cs.value(1)  # turn off
         return ((self._in_buf[1] & 0x03) << 8) | self._in_buf[2]

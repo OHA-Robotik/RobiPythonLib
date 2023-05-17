@@ -64,7 +64,7 @@ class MCP23S17(object):
     def open(self):
         """
         Initializes the MCP23S17 with hardware-address access
-        and sequential operations mode.
+        and sequential operations' mode.
         """
         self.is_initialized = True
 

@@ -5,12 +5,12 @@ from time import sleep
 
 
 class HardwareScannerMenu(SubmenuList):
-    def __init__(self, robi: Robi42, origin: Menu):
+    def __init__(self, robi: Robi42, origin: Menu | SubmenuList):
         super().__init__("HW Scanner", robi, origin, [GyroScanMenu(robi, self), LaserAndConnectorsScanMenu(robi, self)])
 
 
 class GyroScanMenu(Menu):
-    def __init__(self, robi: Robi42, origin: Menu | None):
+    def __init__(self, robi: Robi42, origin: Menu | SubmenuList | None):
         super().__init__("Gyro", "", robi, origin)
 
     def main_loop(self):
@@ -29,7 +29,7 @@ class GyroScanMenu(Menu):
 
 
 class LaserAndConnectorsScanMenu(Menu):
-    def __init__(self, robi: Robi42, origin: Menu | None):
+    def __init__(self, robi: Robi42, origin: Menu | SubmenuList | None):
         super().__init__("Laser & conns", "", robi, origin)
 
     def main_loop(self):

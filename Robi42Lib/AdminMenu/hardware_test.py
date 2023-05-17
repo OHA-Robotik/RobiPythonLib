@@ -6,7 +6,7 @@ from time import sleep
 
 
 class HardwareTestMenu(SubmenuList):
-    def __init__(self, robi: Robi42, origin: Menu):
+    def __init__(self, robi: Robi42, origin: Menu | SubmenuList):
         # TODO: only init the menus for connected components
 
         super().__init__(
@@ -25,7 +25,7 @@ class HardwareTestMenu(SubmenuList):
 
 
 class LedTestMenu(Menu):
-    def __init__(self, robi: Robi42, origin: Menu | None):
+    def __init__(self, robi: Robi42, origin: Menu | SubmenuList | None):
         super().__init__("Led Test", "", robi, origin)
 
     def main_loop(self):
@@ -44,7 +44,7 @@ class LedTestMenu(Menu):
 
 
 class PotiTestMenu(Menu):
-    def __init__(self, robi: Robi42, origin: Menu | None):
+    def __init__(self, robi: Robi42, origin: Menu | SubmenuList | None):
         super().__init__("Poti Test", "", robi, origin)
 
     def main_loop(self):
@@ -59,7 +59,7 @@ class PotiTestMenu(Menu):
 
 
 class PiezoTestMenu(Menu):
-    def __init__(self, robi: Robi42, origin: Menu | None):
+    def __init__(self, robi: Robi42, origin: Menu | SubmenuList | None):
         super().__init__("Piezo Test", "", robi, origin)
 
     def main_loop(self):
@@ -76,7 +76,7 @@ class PiezoTestMenu(Menu):
 
 
 class MotorsTestMenu(SubmenuList):
-    def __init__(self, robi: Robi42, origin: Menu):
+    def __init__(self, robi: Robi42, origin: Menu | SubmenuList):
 
         robi.init_motors()
         super().__init__(
@@ -92,7 +92,7 @@ class MotorsTestMenu(SubmenuList):
 
 class MotorTestMenu(Menu):
     def __init__(
-        self, robi: Robi42, origin: Menu | None, motor: MotorRight | MotorLeft
+        self, robi: Robi42, origin: Menu | SubmenuList | None, motor: MotorRight | MotorLeft
     ):
         super().__init__(
             f"{'Left' if isinstance(motor, MotorLeft) else 'Right'} Motor",
@@ -137,7 +137,7 @@ class MotorTestMenu(Menu):
 
 
 class LaserSensorTestMenu(Menu):
-    def __init__(self, robi: Robi42, origin: Menu | None):
+    def __init__(self, robi: Robi42, origin: Menu | SubmenuList | None):
         super().__init__("Laser Test", "", robi, origin)
 
     def main_loop(self):
@@ -153,7 +153,7 @@ class LaserSensorTestMenu(Menu):
 
 
 class IrSensorsTestMenu(Menu):
-    def __init__(self, robi: Robi42, origin: Menu | None):
+    def __init__(self, robi: Robi42, origin: Menu | SubmenuList | None):
         super().__init__("Ir Sensor Test", "", robi, origin)
 
     def main_loop(self):

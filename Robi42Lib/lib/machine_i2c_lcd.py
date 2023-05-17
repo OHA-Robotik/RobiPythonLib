@@ -64,7 +64,7 @@ class I2cLcd(LcdApi):
         self.i2c.writeto(self.i2c_addr, bytearray([byte | MASK_E]))
         self.i2c.writeto(self.i2c_addr, bytearray([byte]))
         if cmd <= 3:
-            # The home and clear commands require a worst case delay of 4.1 msec
+            # The home and clear commands require the worst case delay of 4.1 msec
             sleep_ms(5)
 
     def hal_write_data(self, data):

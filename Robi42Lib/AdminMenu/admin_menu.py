@@ -40,7 +40,7 @@ class Menu:
     header: str
     content: str
 
-    def __init__(self, header: str, content: str, robi: Robi42, origin: "Menu" | None):
+    def __init__(self, header: str, content: str, robi: Robi42, origin: "Menu"):
         self.header = header
         self.content = content
         self.robi = robi
