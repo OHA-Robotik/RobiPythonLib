@@ -21,14 +21,22 @@ class HardwareManager():
             raise RuntimeError('Cannot explicitly instanciate singleton class. ')
         self.platform_loader = platform_description.PlatformLoader.get_instance()
         self.loaded_i2c_drivers = {i: {} for i in range(len(self.platform_loader.get_platform().get('i2c', [])))}
-
-        self.i2c_rediscovery_timer = Timer()
-        self.i2c_rediscovery_timer.init(period=2000, mode=Timer.PERIODIC, callback=lambda t:self.discover_hardware())
-
-    def discover_hardware(self):
+        self.loaded_spi_drivers = {}
+        self.initialize_spi_hardware()
         self.discover_i2c_hardware()
 
-    def discover_i2c_hardware(self):
+        # start timer
+        self.i2c_rediscovery_timer = Timer()
+        self.i2c_rediscovery_timer.init(period=2000, mode=Timer.PERIODIC, callback=lambda t:self.discover_i2c_hardware())
+
+    def initialize_spi_hardware(self) -> None:
+        for spi_iface, dev_configs in self.platform_loader.get_platform().get('spi', []):
+            for cs_pin, driver, multipliers in dev_configs:
+                for multi_name, args in multipliers.items():
+                    self.loaded_spi_drivers[(driver, multi_name)] = \
+                        driver_inventory.SPI_DRIVERS[driver](spi_iface, cs_pin, *args)
+
+    def discover_i2c_hardware(self) -> None:
         for i2c_num, i2c_phy in enumerate(self.platform_loader.get_platform().get('i2c', [])):
             currently_loaded_drivers = self.loaded_i2c_drivers[i2c_num]
             devices = i2c_phy.scan()

@@ -21,6 +21,8 @@ class PlatformLoader():
                 'num_lines': 2,
                 'num_columns': 16
             },
+            'mcp23s17_leds': {},
+            'mcp23s17_motor_taster': {},
         }
 
     def __init_platform(self):
@@ -32,6 +34,7 @@ class PlatformLoader():
                 machine.I2C(1, sda=machine.Pin(18), scl=machine.Pin(19), freq=400000),
             ],
             'spi': [
+                # spi devices are not expected to change during the runtime (or even at all)
                 # (spi_interface, select_pin, hw_usages),
                 (
                     machine.SPI(
@@ -45,8 +48,13 @@ class PlatformLoader():
                         mosi=machine.Pin(3),
                         miso=machine.Pin(4),
                     ),
-                    machine.Pin(5, machine.Pin.OUT),
-                    {'leds', 'motor_taster', },
+                    [
+                        (
+                            machine.Pin(5, machine.Pin.OUT),
+                            'mcp23s17',
+                            {'leds': [1], 'motor_taster': [0], },
+                        ),
+                    ]
                 ),
                 (
                     machine.SPI(
@@ -60,8 +68,13 @@ class PlatformLoader():
                         mosi=machine.Pin(11),
                         miso=machine.Pin(12),
                     ),
-                    machine.Pin(13, machine.Pin.OUT),
-                    {'analog', },
+                    [
+                        (
+                            machine.Pin(13, machine.Pin.OUT),
+                            'mcp3008',
+                            ['analog', ],
+                        ),
+                    ]
                 ),
             ],
         }
