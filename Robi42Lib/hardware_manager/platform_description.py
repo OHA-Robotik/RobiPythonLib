@@ -72,7 +72,7 @@ class PlatformLoader():
                         (
                             machine.Pin(13, machine.Pin.OUT),
                             'mcp3008',
-                            ['analog', ],
+                            {'analog': (), },
                         ),
                     ]
                 ),
