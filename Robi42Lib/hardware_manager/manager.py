@@ -1,5 +1,6 @@
 import time
 import _thread
+from machine import Timer
 
 from . import platform_description
 from ..device_drivers import inventory as driver_inventory
@@ -16,11 +17,16 @@ class HardwareManager():
         return cls.__INSTANCE
 
     def __init__(self, init_token: object) -> None:
-        # TODO: start a new thread on th 2nd core, that handles hardware scanning
         if init_token != self.__INIT_TOKEN:
             raise RuntimeError('Cannot explicitly instanciate singleton class. ')
         self.platform_loader = platform_description.PlatformLoader.get_instance()
         self.loaded_i2c_drivers = {i: {} for i in range(len(self.platform_loader.get_platform().get('i2c', [])))}
+
+        self.i2c_rediscovery_timer = Timer()
+        self.i2c_rediscovery_timer.init(period=2000, mode=Timer.PERIODIC, callback=lambda t:self.discover_hardware())
+
+    def discover_hardware(self):
+        self.discover_i2c_hardware()
 
     def discover_i2c_hardware(self):
         for i2c_num, i2c_phy in enumerate(self.platform_loader.get_platform().get('i2c', [])):

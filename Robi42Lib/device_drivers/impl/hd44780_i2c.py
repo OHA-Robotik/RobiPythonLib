@@ -301,7 +301,7 @@ class I2C_HAL(HD44780_Controller):
 
 
 class HD44780_I2C_driver(base_driver.I2C_BaseDriver, I2C_HAL):
-    SUPPORTED_ADDRESSES = {0x27, }
+    SUPPORTED_ADDRESSES = {0x27, 0x3f, }
 
     def __init__(self, i2c_interface: object, i2c_addr: int) -> None:
         base_driver.I2C_BaseDriver.__init__(self, i2c_interface, i2c_addr)
