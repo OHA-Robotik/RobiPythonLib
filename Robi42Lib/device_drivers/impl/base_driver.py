@@ -6,7 +6,7 @@ class BaseDriver():
 class I2C_BaseDriver(BaseDriver):
     SUPPORTED_ADDRESSES = set()
 
-    def __init__(self, i2c_interface, i2c_addr) -> None:
+    def __init__(self, i2c_interface: machine.I2C, i2c_addr: int) -> None:
         super().__init__()
         self.i2c_interface = i2c_interface
         self.i2c_addr = i2c_addr
