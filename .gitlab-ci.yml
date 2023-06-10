@@ -10,7 +10,7 @@ build_mpy:
     - apt update
     - apt install -y git make build-essential
     - git clone https://github.com/micropython/micropython.git
-    - cd micropython/mpy_cross
+    - cd micropython/mpy-cross
     - make
     - echo "print('asdf')" > asdf.py
     - ./mpy-cross asdf.py
