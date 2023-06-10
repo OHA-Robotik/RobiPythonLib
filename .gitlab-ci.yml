@@ -1,10 +1,12 @@
 stages:
-  - build_mpy
+  - setup
+  - build
+  - deploy
 
 image: ubuntu:latest
 
-build_mpy:
-  stage: build_mpy
+setup:
+  stage: setup
   script:
     - echo "This job builds something."
     - apt update
@@ -12,6 +14,24 @@ build_mpy:
     - git clone https://github.com/micropython/micropython.git
     - cd micropython/mpy-cross
     - make
+
+build:
+  stage: build
+  script:
+    - ls -lah
     - echo "print('asdf')" > asdf.py
-    - build/mpy-cross asdf.py
+    - micropython/mpy-cross/build/mpy-cross asdf.py
     - cat asdf.mpy
+    - for file in Robi42Lib/**/*.py; do micropython/mpy-cross/build/mpy-cross $file; done
+    - for file in Robi42Lib/**/*.mpy; do mkdir -p build/$(dirname $file); done
+    - for file in Robi42Lib/**/*.mpy; do cp $file build/$file; done
+    - tar -cvf artifacts.tar build/
+  artifacts:
+    paths:
+      - artifacts.tar
+      - "build/"
+
+deploy:
+  stage: deploy
+  script:
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file asdf.mpy "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/my_package/0.0.1/asdf.mpy"'
