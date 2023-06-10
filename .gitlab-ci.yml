@@ -13,5 +13,5 @@ build_mpy:
     - cd micropython/mpy-cross
     - make
     - echo "print('asdf')" > asdf.py
-    - ./mpy-cross asdf.py
+    - build/mpy-cross asdf.py
     - cat asdf.mpy
