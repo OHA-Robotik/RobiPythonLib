@@ -1,7 +1,7 @@
 stages:
   - setup
   - build
-  - deploy
+#  - deploy
 
 image: ubuntu:latest
 
@@ -14,11 +14,19 @@ setup:
     - git clone https://github.com/micropython/micropython.git
     - cd micropython/mpy-cross
     - make
+  cache:
+    key: "changeme-to-recompute"
+    paths:
+      - micropython/mpy-cross/
 
 build:
   stage: build
   dependencies:
     - setup
+  cache:
+    key: "changeme-to-recompute"
+    paths:
+      - micropython/mpy-cross/
   script:
     - ls -lah
     - echo "print('asdf')" > asdf.py
