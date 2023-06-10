@@ -1,0 +1,13 @@
+stages:
+  - build_mpy
+
+image: alpine
+
+build_mpy:
+  stage: build_mpy
+  script:
+    - echo "This job builds something."
+    - apt install git make build-essentials
+    - git clone https://github.com/micropython/micropython.git
+    - cd micropython/mpy_cross
+    - make
