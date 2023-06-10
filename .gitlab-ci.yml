@@ -1,7 +1,7 @@
 stages:
   - build_mpy
 
-image: alpine
+image: ubuntu:latest
 
 build_mpy:
   stage: build_mpy
