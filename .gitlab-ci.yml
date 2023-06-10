@@ -17,6 +17,8 @@ setup:
 
 build:
   stage: build
+  dependencies:
+    - setup
   script:
     - ls -lah
     - echo "print('asdf')" > asdf.py
@@ -33,5 +35,7 @@ build:
 
 deploy:
   stage: deploy
+  dependencies:
+    - build
   script:
     - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file asdf.mpy "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/my_package/0.0.1/asdf.mpy"'
