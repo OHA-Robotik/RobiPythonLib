@@ -11,6 +11,7 @@ setup:
     - echo "This job builds something."
     - apt update
     - apt install -y git make build-essential python3
+    - rm -r micropython
     - git clone https://github.com/micropython/micropython.git
     - cd micropython/mpy-cross
     - make
