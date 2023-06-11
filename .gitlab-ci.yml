@@ -54,4 +54,4 @@ deploy:
   script:
     - apt update
     - apt install -y curl
-    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file asdf.mpy "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/my_package/0.0.1/asdf.mpy"'
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file artifacts.tar "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/my_package/0.0.1/asdf.mpy"'
