@@ -1,7 +1,7 @@
 stages:
   - setup
   - build
-  # - deploy
+  - deploy
 
 image: ubuntu:latest
 
@@ -28,22 +28,20 @@ build:
     paths:
       - micropython/mpy-cross/
   script:
-    - ls -lah
-    - echo "print('asdf')" > asdf.py
-    - micropython/mpy-cross/build/mpy-cross asdf.py
-    - cat asdf.mpy
     - for file in Robi42Lib/**/*.py; do micropython/mpy-cross/build/mpy-cross $file; done
     - for file in Robi42Lib/**/*.mpy; do mkdir -p build/$(dirname $file); done
     - for file in Robi42Lib/**/*.mpy; do cp $file build/$file; done
     - tar -cvf artifacts.tar build/
+    - echo '{"commit": "$CI_COMMIT_SHA", "branch": "$CI_COMMIT_REF_NAME", "date": "$CI_COMMIT_TIMESTAMP"}' > meta.json
   artifacts:
     paths:
+      - meta.json
       - artifacts.tar
       - "build/"
 
-# deploy:
-#   stage: deploy
-#   dependencies:
-#     - build
-#   script:
-#     - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file asdf.mpy "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/my_package/0.0.1/asdf.mpy"'
+deploy:
+  stage: deploy
+  dependencies:
+    - build
+  script:
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file asdf.mpy "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/my_package/0.0.1/asdf.mpy"'
