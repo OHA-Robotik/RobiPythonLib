@@ -28,11 +28,18 @@ build:
     paths:
       - micropython/mpy-cross/
   script:
-    - for file in Robi42Lib/**/*.py; do micropython/mpy-cross/build/mpy-cross $file; done
-    - for file in Robi42Lib/**/*.mpy; do mkdir -p build/$(dirname $file); done
-    - for file in Robi42Lib/**/*.mpy; do cp $file build/$file; done
-    - tar -cvf artifacts.tar build/
-    - echo '{"commit": "$CI_COMMIT_SHA", "branch": "$CI_COMMIT_REF_NAME", "date": "$CI_COMMIT_TIMESTAMP"}' > meta.json
+    - |
+      for file in Robi42Lib/**/*.py; do
+        micropython/mpy-cross/build/mpy-cross $file
+      done
+      for file in Robi42Lib/**/*.mpy; do
+        mkdir -p build/$(dirname $file)
+      done
+      for file in Robi42Lib/**/*.mpy; do
+        cp $file build/$file
+      done
+      tar -cvf artifacts.tar build/
+      echo '{"commit": "$CI_COMMIT_SHA", "branch": "$CI_COMMIT_REF_NAME", "date": "$CI_COMMIT_TIMESTAMP"}' > meta.json
   artifacts:
     paths:
       - meta.json
