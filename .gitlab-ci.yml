@@ -41,7 +41,7 @@ build:
       done
       tar -cvf artifacts.tar build/
       export
-      echo '{"commit": "$CI_COMMIT_SHA", "branch": "$CI_COMMIT_REF_NAME", "date": "$CI_COMMIT_TIMESTAMP"}' > meta.json
+      echo "{\"commit\": \"$CI_COMMIT_SHA\", \"branch\": \"$CI_COMMIT_REF_NAME\", \"date\": \"$CI_COMMIT_TIMESTAMP\"}" > meta.json
   artifacts:
     paths:
       - meta.json
