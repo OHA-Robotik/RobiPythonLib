@@ -40,6 +40,7 @@ build:
         cp $file build/$file
       done
       tar -cvf artifacts.tar build/
+      export
       echo '{"commit": "$CI_COMMIT_SHA", "branch": "$CI_COMMIT_REF_NAME", "date": "$CI_COMMIT_TIMESTAMP"}' > meta.json
   artifacts:
     paths:
@@ -54,4 +55,5 @@ deploy:
   script:
     - apt update
     - apt install -y curl
+    - export
     - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file artifacts.tar "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/my_package/0.0.1/asdf.mpy"'
