@@ -18,7 +18,7 @@ class HardwareManager():
 
     def __init__(self, init_token: object) -> None:
         if init_token != self.__INIT_TOKEN:
-            raise RuntimeError('Cannot explicitly instanciate singleton class. ')
+            raise RuntimeError('Cannot explicitly instantiate singleton class. ')
         self.platform_loader = platform_description.PlatformLoader.get_instance()
         self.loaded_i2c_drivers = {i: {} for i in range(len(self.platform_loader.get_platform().get('i2c', [])))}
         self.loaded_spi_drivers = {}
@@ -42,7 +42,7 @@ class HardwareManager():
             devices = i2c_phy.scan()
             for address in devices:
                 if address in currently_loaded_drivers:
-                    # hardware is already initalized, nothing to do here
+                    # hardware is already initialized, nothing to do here
                     continue
                 # look for a matching driver
                 selected_driver = None
@@ -51,7 +51,7 @@ class HardwareManager():
                         selected_driver = driver
                         break
                 if selected_driver is not None:
-                    print('Instanciate', selected_driver.__name__)
+                    print('Instantiate', selected_driver.__name__)
                     currently_loaded_drivers[address] = selected_driver(i2c_phy, address)
             # destruct drivers of hardware that has been removed
             addresses_to_destruct = set(currently_loaded_drivers.keys()) - set(devices)

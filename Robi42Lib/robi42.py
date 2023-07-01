@@ -136,7 +136,7 @@ class Robi42:
 
                 if str(exc_val) != "":
                     self.lcd.clear()
-                    self.lcd.putstr("Execption value:")
+                    self.lcd.putstr("Exception value:")
 
                     sleep(1)
                     self.lcd.clear()

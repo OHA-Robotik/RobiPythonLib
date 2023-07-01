@@ -53,7 +53,7 @@ class MPU6050(base_driver.I2C_BaseDriver):
         # Can communicate with chip. Set it up.
         self.wake()  # wake it up
         self.passthrough = True  # Enable mag access from main I2C bus
-        self.accel_range = 0  # default to highest sensitivity
+        self.accel_range = 0  # default to the highest sensitivity
         self.gyro_range = 0  # Likewise for gyro
 
     # read from device
@@ -238,7 +238,7 @@ class MPU6050(base_driver.I2C_BaseDriver):
     @property
     def accel(self):
         """
-        Acceleremoter object
+        Accelerometer object
         """
         return self._accel
 

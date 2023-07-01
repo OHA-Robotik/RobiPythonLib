@@ -14,7 +14,7 @@ class PlatformLoader():
 
     def __init__(self, init_token: object) -> None:
         if init_token != self.__INIT_TOKEN:
-            raise RuntimeError('Cannot explicitly instanciate singleton class. ')
+            raise RuntimeError('Cannot explicitly instantiate singleton class. ')
         self.__init_platform()
         self.__driver_preferences = {
             'hd44780_i2c': {
