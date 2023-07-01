@@ -1,14 +1,15 @@
+from time import sleep
+
+from Robi42Lib.buttons import Buttons
 from Robi42Lib.gyro import *
-from Robi42Lib.piezo import *
+from Robi42Lib.ir_sensor import IrSensors
+from Robi42Lib.laser_sensor import LaserSensor
 from Robi42Lib.lcd import *
 from Robi42Lib.led import Leds
 from Robi42Lib.motor import Motors
-from Robi42Lib.buttons import Buttons
-from Robi42Lib.laser_sensor import LaserSensor
+from Robi42Lib.piezo import *
 from Robi42Lib.poti import Poti
-from Robi42Lib.ir_sensor import IrSensors
 from Robi42Lib.voltage_reader import VoltageReader
-from time import sleep
 
 
 class Robi42:
@@ -100,16 +101,16 @@ class Robi42:
     def stop(self, exc_type: type = None, exc_val=None, exc_tb=None):
 
         if self.enable_piezo:
-            self.piezo.turn_off()
+            self.piezo.deinit()
         if self.enable_leds:
-            self.leds.off()
+            self.leds.turn_all_off()
         if self.enable_motors:
             self.motors.disable()
 
         self._display_exception(exc_type, exc_val, exc_tb)
 
         if self.enable_lcd:
-            self.lcd.off()
+            self.lcd.turn_off()
 
     def _display_exception(self, exc_type: type, exc_val, exc_tb):
         if exc_type is not None:
@@ -123,7 +124,7 @@ class Robi42:
                 print(exc_tb)
 
             while self.enable_lcd:
-                self.lcd.on()
+                self.lcd.turn_on()
 
                 self.lcd.clear()
                 self.lcd.putstr("!---Exception--!")

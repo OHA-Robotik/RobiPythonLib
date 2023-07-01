@@ -1,6 +1,8 @@
-from machine import Pin, PWM
 from time import sleep_ms
+
+from machine import Pin, PWM
 from uasyncio import sleep_ms as sleep_ms_async
+
 import Robi42Lib.notes_and_freqs as naf
 
 
@@ -8,35 +10,38 @@ class Piezo:
     def __init__(self):
         self.piezo = PWM(Pin(22, Pin.OUT))
         self.piezo.freq(440)
-        self.piezo.duty_u16(0)
+        self.mute()
 
     def play_tone(self, tone: "Tone"):
         self.piezo.duty_u16(512)
         self.piezo.freq(tone.freq)
         sleep_ms(tone.duration_ms)
-        self.piezo.duty_u16(0)
+        self.mute()
 
     def play_tones(self, tones: list["Tone"]):
         for tone in tones:
             self.piezo.duty_u16(512)
             self.piezo.freq(tone.freq)
             sleep_ms(tone.duration_ms)
-        self.piezo.duty_u16(0)
+        self.mute()
 
     async def play_tone_async(self, tone: "Tone"):
         self.piezo.duty_u16(512)
         self.piezo.freq(tone.freq)
         await sleep_ms_async(tone.duration_ms)
-        self.piezo.duty_u16(0)
+        self.mute()
 
     async def play_tones_async(self, tones: list["Tone"]):
+        self.piezo.duty_u16(512)
         for tone in tones:
-            self.piezo.duty_u16(512)
             self.piezo.freq(tone.freq)
             await sleep_ms_async(tone.duration_ms)
+        self.mute()
+
+    def mute(self):
         self.piezo.duty_u16(0)
 
-    def turn_off(self):
+    def deinit(self):
         self.piezo.duty_u16(0)
         self.piezo.deinit()
 

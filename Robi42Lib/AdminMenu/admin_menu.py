@@ -1,5 +1,6 @@
-from Robi42Lib.robi42 import Robi42
 from time import sleep
+
+from Robi42Lib.robi42 import Robi42
 
 
 class ButtonInput:
@@ -154,7 +155,7 @@ class MainMenu(SubmenuList):
             None,
             [HardwareTestMenu(robi, self), HardwareScannerMenu(robi, self)],
         )
-        robi.lcd.on()
+        robi.lcd.turn_on()
 
 
 if __name__ == "__main__":

@@ -2,21 +2,20 @@ from Robi42Lib.mcps import analog_mcp
 
 
 class IrSensor:
-    __pin: int
 
     def __init__(self, pin: int) -> None:
         self.__pin = pin
 
-    def get_raw_value(self) -> int:
+    def read_raw_value(self) -> int:
         return analog_mcp.read(self.__pin)
 
-    def get_value(self) -> float:
-        raw = self.get_raw_value()
+    def read_value(self) -> float:
+        raw = self.read_raw_value()
         if raw < 100:
-            raw = 0
-        elif raw > 924:
-            raw = 1024
-        return raw / 1024
+            return 0
+        if raw > 924:
+            return 1
+        return raw / 0b1111111111
 
 
 class IrSensors:
@@ -25,12 +24,12 @@ class IrSensors:
         self.middle = IrSensor(1)
         self.right = IrSensor(2)
 
-    def get_raw_values(self) -> tuple[int, int, int]:
+    def read_raw_values(self) -> tuple[int, int, int]:
         return (
-            self.left.get_raw_value(),
-            self.middle.get_raw_value(),
-            self.right.get_raw_value(),
+            self.left.read_raw_value(),
+            self.middle.read_raw_value(),
+            self.right.read_raw_value(),
         )
 
-    def get_values(self) -> tuple[float, float, float]:
-        return self.left.get_value(), self.middle.get_value(), self.right.get_value()
+    def read_values(self) -> tuple[float, float, float]:
+        return self.left.read_value(), self.middle.read_value(), self.right.read_value()

@@ -1,21 +1,21 @@
 # How to use custom char: https://microcontrollerslab.com/i2c-lcd-raspberry-pi-pico-micropython-tutorial/
 
-from Robi42Lib.lib.machine_i2c_lcd import I2cLcd
-from Robi42Lib.i2c_connections import laser_and_conns_i2c
 from time import sleep
+
+from Robi42Lib.i2c_connections import laser_and_conns_i2c
+from Robi42Lib.lib.machine_i2c_lcd import I2cLcd
 
 
 class LCD(I2cLcd):
     def __init__(self):
         super().__init__(laser_and_conns_i2c, 0x3F, 2, 16)
-        self.off()
 
-    def off(self):
+    def turn_off(self):
         self.clear()
         self.backlight_off()
         self.display_off()
 
-    def on(self):
+    def turn_on(self):
         self.backlight_on()
         self.display_on()
 
@@ -23,7 +23,7 @@ class LCD(I2cLcd):
         for i in range(0, len(s), 32):
             self.clear()
             if i + 32 < len(s):
-                self.putstr(s[i : i + 32])
+                self.putstr(s[i: i + 32])
             else:
                 self.putstr(s[i:])
             sleep(delay)

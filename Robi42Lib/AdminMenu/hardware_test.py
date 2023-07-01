@@ -1,8 +1,9 @@
-from Robi42Lib.AdminMenu.admin_menu import SubmenuList, Menu
-from Robi42Lib.robi42 import Robi42
-from Robi42Lib.piezo import Tone
-from Robi42Lib.motor import MotorLeft, MotorRight
 from time import sleep
+
+from Robi42Lib.AdminMenu.admin_menu import SubmenuList, Menu
+from Robi42Lib.motor import MotorLeft, MotorRight
+from Robi42Lib.piezo import Tone
+from Robi42Lib.robi42 import Robi42
 
 
 class HardwareTestMenu(SubmenuList):
@@ -33,14 +34,14 @@ class LedTestMenu(Menu):
         while not self.robi.buttons.left.is_pressed():
             self.robi.lcd.clear()
             if on:
-                self.robi.leds.on()
+                self.robi.leds.turn_all_on()
                 self.robi.lcd.putstr("Leds ON")
             else:
-                self.robi.leds.off()
+                self.robi.leds.turn_all_off()
                 self.robi.lcd.putstr("Leds OFF")
             on = not on
             sleep(0.5)
-        self.robi.leds.off()
+        self.robi.leds.turn_all_off()
 
 
 class PotiTestMenu(Menu):
@@ -49,8 +50,8 @@ class PotiTestMenu(Menu):
 
     def main_loop(self):
         while not self.robi.buttons.left.is_pressed():
-            raw = self.robi.poti.get_raw_value()
-            value = self.robi.poti.get_value()
+            raw = self.robi.poti.read_raw_value()
+            value = self.robi.poti.read_value()
             self.robi.lcd.clear()
             self.robi.lcd.putstr(f"Raw: {raw}")
             self.robi.lcd.move_to(0, 1)
@@ -117,7 +118,7 @@ class MotorTestMenu(Menu):
 
             sleep(0.2)
 
-            freq = int(self.robi.poti.get_raw_value() / 1024 * 150_000)
+            freq = int(self.robi.poti.read_raw_value() / 1023 * 150_000)
 
             if freq <= 1000:
                 freq = 1000
@@ -148,7 +149,7 @@ class LaserSensorTestMenu(Menu):
             self.robi.lcd.clear()
             self.robi.lcd.putstr("Distance:")
             self.robi.lcd.move_to(0, 1)
-            self.robi.lcd.putstr(f"{self.robi.laser_sensor.get_distance():,}mm")
+            self.robi.lcd.putstr(f"{self.robi.laser_sensor.read_distance_mm():,}mm")
             sleep(0.3)
 
 
@@ -161,7 +162,7 @@ class IrSensorsTestMenu(Menu):
         self.robi.init_ir_sensors()
 
         while not self.robi.buttons.left.is_pressed():
-            raw_l, raw_m, raw_r = self.robi.ir_sensors.get_raw_values()
+            raw_l, raw_m, raw_r = self.robi.ir_sensors.read_raw_values()
             self.robi.lcd.clear()
             self.robi.lcd.putstr(f"Raw: L:{raw_l} M:{raw_m} R:{raw_r}")
             sleep(0.3)

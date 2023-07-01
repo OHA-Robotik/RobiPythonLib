@@ -16,7 +16,7 @@ with Robi42() as r:
     wlan.active(True)
     wlan.connect(ssid, password)
 
-    r.lcd.on()
+    r.lcd.turn_on()
 
     # Wait for connect or fail
     max_wait = 10

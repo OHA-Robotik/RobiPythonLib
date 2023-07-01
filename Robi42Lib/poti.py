@@ -11,7 +11,7 @@ class Poti:
     def get_value(self) -> float:
         raw = self.get_raw_value()
         if raw < 50:
-            raw = 0
-        elif raw > 974:
-            raw = 1024
-        return raw / 1024
+            return 0
+        if raw > 974:
+            return 1
+        return raw / 0b1111111111

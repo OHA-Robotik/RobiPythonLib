@@ -8,16 +8,6 @@ BLINKER_BACK_LEFT = 4
 BLINKER_BACK_RIGHT = 5
 BACKLIGHT_LEFT = 6
 BACKLIGHT_RIGHT = 7
-LED_NUMS = (
-    HEADLIGHT_LEFT,
-    HEADLIGHT_RIGHT,
-    BLINKER_FRONT_LEFT,
-    BLINKER_FRONT_RIGHT,
-    BLINKER_BACK_RIGHT,
-    BLINKER_BACK_LEFT,
-    BACKLIGHT_LEFT,
-    BACKLIGHT_RIGHT,
-)
 LED_NUMS_CLOCKWISE = (
     BLINKER_FRONT_LEFT,
     HEADLIGHT_LEFT,
@@ -32,38 +22,54 @@ LED_NUMS_CLOCKWISE = (
 
 class Led:
 
-    __state: int
+    __is_on: bool
 
     def __init__(self, led_num: int):
         assert 0 <= led_num < 8, f"Bad led_num: {led_num}"
         self.led_num = led_num
-        self.off()
 
-    def on(self):
+    def turn_on(self):
         led_and_extension_mcp.digital_write(self.led_num, 0)
-        self.__state = 0
+        self.__is_on = False
 
-    def off(self):
+    def turn_off(self):
         led_and_extension_mcp.digital_write(self.led_num, 1)
-        self.__state = 1
+        self.__is_on = True
 
-    def value(self, value: int):
-        assert value == 0 or value == 1
-        led_and_extension_mcp.digital_write(self.led_num, value)
-        self.__state = value
+    def set_on(self, on: bool):
+        led_and_extension_mcp.digital_write(self.led_num, on)
+        self.__is_on = on
 
     def toggle(self):
-        self.__state ^= 1
-        led_and_extension_mcp.digital_write(self.__state)
+        self.__is_on ^= 1
+        led_and_extension_mcp.digital_write(self.__is_on)
 
     @property
-    def state(self):
-        return self.__state
+    def is_on(self):
+        return self.__is_on
+
+
+class LedGroup:
+    def __init__(self, leds: list[Led]):
+        self.leds = leds
+
+    def turn_on(self):
+        for led in self.leds:
+            led.turn_on()
+
+    def turn_off(self):
+        for led in self.leds:
+            led.turn_off()
+
+    def toggle(self):
+        for led in self.leds:
+            led.toggle()
 
 
 class Leds:
     def __init__(self) -> None:
         self.leds = [Led(i) for i in LED_NUMS_CLOCKWISE]
+
         self.blinker_front_left = self.leds[0]
         self.headlight_left = self.leds[1]
         self.headlight_right = self.leds[2]
@@ -73,32 +79,19 @@ class Leds:
         self.backlight_left = self.leds[6]
         self.blinker_back_left = self.leds[7]
 
-    def on(self):
+        self.headlights = LedGroup([self.headlight_left, self.headlight_right])
+        self.backlights = LedGroup([self.backlight_left, self.backlight_right])
+
+    def turn_all_on(self):
         for led in self.leds:
-            led.on()
+            led.turn_on()
 
-    def off(self):
+    def turn_all_off(self):
         for led in self.leds:
-            led.off()
+            led.turn_off()
 
-    def led_on(self, led_num: int):
-        self.leds[led_num].on()
+    def turn_led_on(self, led_num: int):
+        self.leds[led_num].turn_on()
 
-    def led_off(self, led_num: int):
-        self.leds[led_num].off()
-
-    def headlight_on(self):
-        self.leds[HEADLIGHT_LEFT].on()
-        self.leds[HEADLIGHT_RIGHT].on()
-
-    def headlight_off(self):
-        self.leds[HEADLIGHT_LEFT].off()
-        self.leds[HEADLIGHT_RIGHT].off()
-
-    def backlight_on(self):
-        self.leds[BACKLIGHT_LEFT].on()
-        self.leds[BACKLIGHT_RIGHT].on()
-
-    def backlight_off(self):
-        self.leds[BACKLIGHT_LEFT].off()
-        self.leds[BACKLIGHT_RIGHT].off()
+    def turn_led_off(self, led_num: int):
+        self.leds[led_num].turn_off()
