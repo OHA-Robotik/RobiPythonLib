@@ -11,7 +11,7 @@ class Motor:
 
     def __init__(self, pin: int, step_pwm: PIOPWM | PWM):
         self.__pin = pin
-        self.__step_pwm = step_pwm
+        self._step_pwm = step_pwm
 
         self.disable()
         self.set_freq(420)
@@ -26,7 +26,7 @@ class Motor:
 
     def set_freq(self, freq: int):
         self.__current_freq = freq
-        self.__step_pwm.freq(freq)
+        self._step_pwm.freq(freq)
 
     def set_stepping_size(self, m0: bool, m1: bool, m2: bool):
         ...
@@ -72,6 +72,7 @@ class MotorRight(Motor):
 
     def __init__(self) -> None:
         super().__init__(15, PWM(Pin(21, Pin.OUT)))
+        self._step_pwm.duty_u16(32768)
 
     def set_stepping_size(self, m0: bool, m1: bool, m2: bool):
         motor_and_button_mcp.digital_write(4, m0)
