@@ -16,7 +16,7 @@ import machine
 
 class MCP3008(base_driver.SPI_BaseDriver):
 
-    def __init__(self, spi_interface: machine.SPI, cs_pin: machine.Pin,  ref_voltage=3.3) -> None:
+    def __init__(self, spi_interface: machine.SPI, cs_pin: machine.Pin) -> None:
         """
         Create MCP3008 instance
         Args:
@@ -29,11 +29,6 @@ class MCP3008(base_driver.SPI_BaseDriver):
         self._out_buf = bytearray(3)
         self._out_buf[0] = 0x01
         self._in_buf = bytearray(3)
-        self._ref_voltage = ref_voltage
-
-    def reference_voltage(self) -> float:
-        """Returns the MCP3xxx's reference voltage as a float."""
-        return self._ref_voltage
 
     def read(self, pin, is_differential=False):
         """

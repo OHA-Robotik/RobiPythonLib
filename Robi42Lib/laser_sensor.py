@@ -12,6 +12,8 @@ class LaserSensor:
         """
         Returns the distance in mm.
         Takes 20ms for cooldown.
+
+        60 = random gemessen mit der Hand davor gehalten
         """
         sleep_ms(20)
         return abs(self.__vl53l0x.ping() - 60)
