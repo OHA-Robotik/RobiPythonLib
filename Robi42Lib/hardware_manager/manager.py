@@ -20,25 +20,20 @@ class HardwareManager():
         if init_token != self.__INIT_TOKEN:
             raise RuntimeError('Cannot explicitly instantiate singleton class. ')
         self.platform_loader = platform_description.PlatformLoader.get_instance()
-        self.loaded_i2c_drivers = {i: {} for i in range(len(self.platform_loader.get_platform().get('i2c', [])))}
-        self.loaded_spi_drivers = {}
-        self.initialize_spi_hardware()
+        self.i2c_drivers_by_address = {i: {} for i in range(len(self.platform_loader.get_platform().get('i2c', [])))}
+        self.i2c_drivers_by_name = {}
         self.discover_i2c_hardware()
 
         # start timer
         self.i2c_rediscovery_timer = Timer()
         self.i2c_rediscovery_timer.init(period=2000, mode=Timer.PERIODIC, callback=lambda t:self.discover_i2c_hardware())
 
-    def initialize_spi_hardware(self) -> None:
-        for spi_iface, dev_configs in self.platform_loader.get_platform().get('spi', []):
-            for cs_pin, driver, multipliers in dev_configs:
-                for multi_name, args in multipliers.items():
-                    self.loaded_spi_drivers[(driver, multi_name)] = \
-                        driver_inventory.SPI_DRIVERS[driver](spi_iface, cs_pin, *args)
+    def get_i2c_driver_by_name(self, name: str) -> list:
+        return self.i2c_drivers_by_name.get(name, [])
 
     def discover_i2c_hardware(self) -> None:
         for i2c_num, i2c_phy in enumerate(self.platform_loader.get_platform().get('i2c', [])):
-            currently_loaded_drivers = self.loaded_i2c_drivers[i2c_num]
+            currently_loaded_drivers = self.i2c_drivers_by_address[i2c_num]
             devices = i2c_phy.scan()
             for address in devices:
                 if address in currently_loaded_drivers:
@@ -51,10 +46,17 @@ class HardwareManager():
                         selected_driver = driver
                         break
                 if selected_driver is not None:
-                    print('Instantiate', selected_driver.__name__)
-                    currently_loaded_drivers[address] = selected_driver(i2c_phy, address)
+                    print('Instanciate', selected_driver.__name__)
+                    driver_obj = selected_driver(i2c_phy, address)
+                    currently_loaded_drivers[address] = driver_obj
+                    if selected_driver.__name__ not in self.i2c_drivers_by_name:
+                        self.i2c_drivers_by_name[selected_driver.__name__] = []
+                    self.i2c_drivers_by_name[selected_driver.__name__].append(driver_obj)
             # destruct drivers of hardware that has been removed
             addresses_to_destruct = set(currently_loaded_drivers.keys()) - set(devices)
             for address in addresses_to_destruct:
-                print('Destroying driver:', currently_loaded_drivers[address].__class__.__name__)
+                driver_class_name = currently_loaded_drivers[address].__class__.__name__
+                print('Destroying driver:', driver_class_name)
+                driver_obj = currently_loaded_drivers[address]
+                self.i2c_drivers_by_name[driver_class_name].remove(driver_obj)
                 del currently_loaded_drivers[address]

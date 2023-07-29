@@ -61,6 +61,8 @@ class MCP23S17(base_driver.SPI_BaseDriver):
         self.is_initialized = False
         self.read_command = MCP23S17.MCP23S17_CMD_READ | (deviceID << 1)
         self.write_command = MCP23S17.MCP23S17_CMD_WRITE | (deviceID << 1)
+        self.port_a_pullup_status = 0
+        self.port_b_pullup_status = 0
 
     def open(self):
         """
@@ -105,6 +107,21 @@ class MCP23S17(base_driver.SPI_BaseDriver):
             self._IODIRA = data
         else:
             self._IODIRB = data
+
+    def set_pullup(self, pin: int, enable: bool):
+        # first find if the pin num is in port a or b, then build the right bitmask
+        if pin < 8:  # 0-7 is PORT_A
+            if enable:
+                bitmask = self.port_a_pullup_status | (1 << pin)
+            else:
+                bitmask = self.port_a_pullup_status & (0xFF ^ (1 << pin))
+            self.set_pullup_PORTA(bitmask)
+        else:  # 8-15 is PORT_B
+            if enable:
+                bitmask = self.port_a_pullup_status | (1 << (pin - 8))
+            else:
+                bitmask = self.port_a_pullup_status & (0xFF ^ (1 << (pin - 8)))
+            self.set_pullup_PORTB(bitmask)
 
     def digital_read(self, pin: int) -> bool:
         """
@@ -169,12 +186,14 @@ class MCP23S17(base_driver.SPI_BaseDriver):
 
     def set_pullup_PORTA(self, data):
         assert self.is_initialized
+        self.port_a_pullup_status = data
 
         self._write_register(MCP23S17.MCP23S17_GPPUA, data)
         self._GPPUA = data
 
     def set_pullup_PORTB(self, data):
         assert self.is_initialized
+        self.port_b_pullup_status = data
 
         self._write_register(MCP23S17.MCP23S17_GPPUB, data)
         self._GPPUB = data
