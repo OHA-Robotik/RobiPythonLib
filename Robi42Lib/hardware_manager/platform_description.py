@@ -205,7 +205,7 @@ class AnalogBoardPins():
     u_3v3 = 'u_3v3'
     u_5v = 'u_5v'
     u_bat = 'u_bat'
-    u_bat = 'u_bat'
+    poti = 'poti'
 
 
 class AnalogBoardPin():
@@ -216,7 +216,7 @@ class AnalogBoardPin():
         AnalogBoardPins.u_3v3: 3,
         AnalogBoardPins.u_5v: 4,
         AnalogBoardPins.u_bat: 5,
-        AnalogBoardPins.u_bat: 6,
+        AnalogBoardPins.poti: 6,
     }
 
     # TODO: Actually implement the enum. Right now it is just a shortcut for the right string.
