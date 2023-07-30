@@ -1,4 +1,4 @@
-from Robi42Lib.mcps import analog_mcp
+from . import base_module
 
 
 def to_voltage(X, ref_voltage):
@@ -18,23 +18,33 @@ def spannungsteiler_reverse(u_out, r1, r2):
     return u_out * (1 + r2/r1)
 
 
-class VoltageReader:
+class VoltageReader(base_module.BaseModule):
 
     REF_VOLTAGE = 2.5
 
+    # TODO: MOVEME
+    # conf = {
+    #     'battery': 5,
+    #     '50v': 4,
+    #     '33v': 3,
+    # }
+
     def __init__(self) -> None:
+        self.pin_battery = base_module.AnalogBoardPin('battery')
+        self.pin_50v = base_module.AnalogBoardPin('50v')
+        self.pin_33v = base_module.AnalogBoardPin('33v')
         self.magic_bat = 1 / spannungsteiler_reverse(to_voltage(1, ref_voltage=self.REF_VOLTAGE), r1=2.2, r2=22)
         self.magic_50v = 1 / spannungsteiler_reverse(to_voltage(1, ref_voltage=self.REF_VOLTAGE), r1=2.2, r2=4.7)
         self.magic_33v = 1 / spannungsteiler_reverse(to_voltage(1, ref_voltage=self.REF_VOLTAGE), r1=2.2, r2=2.7)
 
     def get_battery_voltage(self):
         """Returns the battery voltage in V"""
-        return analog_mcp.read(5) / self.magic_bat
+        return self.pin_battery.read() / self.magic_bat
 
     def get_5v_voltage(self):
         """Returns the 5V voltage in V"""
-        return analog_mcp.read(5) / self.magic_50v
+        return self.pin_50v.read() / self.magic_50v
 
     def get_33v_voltage(self):
         """Returns the 3.3V voltage in V"""
-        return analog_mcp.read(5) / self.magic_33v
+        return self.pin_33v.read() / self.magic_33v
