@@ -4,7 +4,7 @@
 from utime import sleep_ms
 from machine import I2C
 from Robi42Lib.device_drivers.impl import base_driver
-from Robi42Lib.device_drivers.impl.vector3d import Vector3d
+from ...abstract.vector3d import Vector3d
 
 
 class MPUException(OSError):
