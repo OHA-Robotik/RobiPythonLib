@@ -106,7 +106,7 @@ class SPIHardwareHolder():
         self.mcp_analog = drv_mcp3008.MCP3008(self.spi_analog, self.spi_analog_cs)
 
 
-class BoardPins():
+class DigitalBoardPins():
     btn_up = 'btn_up'
     btn_down = 'btn_down'
     btn_center = 'btn_center'
@@ -135,33 +135,33 @@ class BoardPins():
 class DigitalBoardPin():
     PIN_LOOKUP = {
         # chip 0
-        BoardPins.btn_up: (0, 11),
-        BoardPins.btn_down: (0, 12),
-        BoardPins.btn_center: (0, 8),
-        BoardPins.btn_left: (0, 9),
-        BoardPins.btn_right: (0, 10),
+        DigitalBoardPins.btn_up: (0, 11),
+        DigitalBoardPins.btn_down: (0, 12),
+        DigitalBoardPins.btn_center: (0, 8),
+        DigitalBoardPins.btn_left: (0, 9),
+        DigitalBoardPins.btn_right: (0, 10),
 
-        BoardPins.mr_en: (0, 14),
-        BoardPins.mr_dir: (0, 3),
-        BoardPins.mr_m0: (0, 0),
-        BoardPins.mr_m1: (0, 1),
-        BoardPins.mr_m2: (0, 2),
+        DigitalBoardPins.mr_en: (0, 14),
+        DigitalBoardPins.mr_dir: (0, 3),
+        DigitalBoardPins.mr_m0: (0, 0),
+        DigitalBoardPins.mr_m1: (0, 1),
+        DigitalBoardPins.mr_m2: (0, 2),
 
-        BoardPins.ml_en: (0, 15),
-        BoardPins.ml_dir: (0, 7),
-        BoardPins.ml_m0: (0, 4),
-        BoardPins.ml_m1: (0, 5),
-        BoardPins.ml_m2: (0, 6),
+        DigitalBoardPins.ml_en: (0, 15),
+        DigitalBoardPins.ml_dir: (0, 7),
+        DigitalBoardPins.ml_m0: (0, 4),
+        DigitalBoardPins.ml_m1: (0, 5),
+        DigitalBoardPins.ml_m2: (0, 6),
 
         # chip 1
-        BoardPins.led_sl: (1, 0),
-        BoardPins.led_sr: (1, 1),
-        BoardPins.led_bl_lv: (1, 2),
-        BoardPins.led_bl_rv: (1, 3),
-        BoardPins.led_bl_lh: (1, 4),
-        BoardPins.led_bl_rh: (1, 5),
-        BoardPins.led_rl: (1, 6),
-        BoardPins.led_rr: (1, 7),
+        DigitalBoardPins.led_sl: (1, 0),
+        DigitalBoardPins.led_sr: (1, 1),
+        DigitalBoardPins.led_bl_lv: (1, 2),
+        DigitalBoardPins.led_bl_rv: (1, 3),
+        DigitalBoardPins.led_bl_lh: (1, 4),
+        DigitalBoardPins.led_bl_rh: (1, 5),
+        DigitalBoardPins.led_rl: (1, 6),
+        DigitalBoardPins.led_rr: (1, 7),
         # expansion ports still unmapped
     }
 
@@ -196,3 +196,36 @@ class DigitalBoardPin():
 
     def off(self):
         self.value(0)
+
+
+class AnalogBoardPins():
+    ir_right = 'ir_right'
+    ir_middle = 'ir_middle'
+    ir_right = 'ir_right'
+    u_3v3 = 'u_3v3'
+    u_5v = 'u_5v'
+    u_bat = 'u_bat'
+    u_bat = 'u_bat'
+
+
+class AnalogBoardPin():
+    PIN_LOOKUP = {
+        AnalogBoardPins.ir_right: 0,
+        AnalogBoardPins.ir_middle: 1,
+        AnalogBoardPins.ir_right: 2,
+        AnalogBoardPins.u_3v3: 3,
+        AnalogBoardPins.u_5v: 4,
+        AnalogBoardPins.u_bat: 5,
+        AnalogBoardPins.u_bat: 6,
+    }
+
+    # TODO: Actually implement the enum. Right now it is just a shortcut for the right string.
+    def __init__(self, pin_id: str) -> None:
+        if pin_id not in self.PIN_LOOKUP:
+            raise ValueError('Cannot find pin \'{}\'!'.format(pin_id))
+        self.__pin = self.PIN_LOOKUP[pin_id]
+        # get the right mcp object
+        self.__mcp_obj = SPIHardwareHolder.get_instance().mcp_analog
+    
+    def read_raw(self) -> int:
+        return self.__mcp_obj.read(self.__pin)
