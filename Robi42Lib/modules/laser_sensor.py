@@ -4,10 +4,9 @@ from . import base_module
 
 
 class LaserSensor(base_module.BaseModule):
-    def __init__(self) -> None:
-        self.__vl53l0x = base_module.BoardDevices('laser')
 
-    def read_distance_mm(self):
+    @base_module.need_i2c_hardware('vl53l0x')
+    def read_distance_mm(self, vl53l0x=None):
         """
         Returns the distance in mm.
         Takes 20ms for cooldown.
@@ -15,4 +14,4 @@ class LaserSensor(base_module.BaseModule):
         60 = random gemessen mit der Hand davor gehalten
         """
         sleep_ms(20)
-        return abs(self.__vl53l0x.ping() - 60)
+        return abs(vl53l0x.ping() - 60)

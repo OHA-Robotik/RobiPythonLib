@@ -6,23 +6,24 @@ from . import base_module
 
 
 class LCD(base_module.BaseModule):
-    def __init__(self):
-        self.lcd = base_module.BoardDevices('lcd')
 
-    def turn_off(self):
-        self.lcd.clear()
-        self.lcd.backlight_off()
-        self.lcd.display_off()
+    @base_module.need_i2c_hardware('hd44780_i2c')
+    def turn_off(self, hd44780_i2c=None):
+        hd44780_i2c.clear()
+        hd44780_i2c.backlight_off()
+        hd44780_i2c.display_off()
 
-    def turn_on(self):
-        self.lcd.backlight_on()
-        self.lcd.display_on()
+    @base_module.need_i2c_hardware('hd44780_i2c')
+    def turn_on(self, hd44780_i2c=None):
+        hd44780_i2c.backlight_on()
+        hd44780_i2c.display_on()
 
-    def put_large_str(self, s: str, delay: int = 1):
+    @base_module.need_i2c_hardware('hd44780_i2c')
+    def put_large_str(self, s: str, delay: int = 1, hd44780_i2c=None):
         for i in range(0, len(s), 32):
             self.clear()
             if i + 32 < len(s):
-                self.lcd.putstr(s[i: i + 32])
+                hd44780_i2c.putstr(s[i: i + 32])
             else:
-                self.lcd.putstr(s[i:])
+                hd44780_i2c.putstr(s[i:])
             sleep(delay)
