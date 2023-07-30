@@ -3,15 +3,11 @@ from . import base_module
 
 class Poti(base_module.BaseModule):
 
-    conf = {
-        'poti': 6
-    }
-
     def __init__(self) -> None:
-        self.poti_pin = base_module.AnalogBoardPin('poti')
+        self.poti_pin = base_module.AnalogBoardPin(base_module.AnalogBoardPins.poti)
 
     def get_raw_value(self) -> int:
-        return self.poti_pin.read()
+        return self.poti_pin.read_raw()
 
     def get_value(self) -> float:
         raw = self.get_raw_value()

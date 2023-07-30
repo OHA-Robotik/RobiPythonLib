@@ -199,7 +199,7 @@ class DigitalBoardPin():
 
 
 class AnalogBoardPins():
-    ir_right = 'ir_right'
+    ir_left = 'ir_left'
     ir_middle = 'ir_middle'
     ir_right = 'ir_right'
     u_3v3 = 'u_3v3'
@@ -210,7 +210,7 @@ class AnalogBoardPins():
 
 class AnalogBoardPin():
     PIN_LOOKUP = {
-        AnalogBoardPins.ir_right: 0,
+        AnalogBoardPins.ir_left: 0,
         AnalogBoardPins.ir_middle: 1,
         AnalogBoardPins.ir_right: 2,
         AnalogBoardPins.u_3v3: 3,
