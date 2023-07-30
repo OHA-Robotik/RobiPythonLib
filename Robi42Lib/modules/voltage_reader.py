@@ -22,17 +22,10 @@ class VoltageReader(base_module.BaseModule):
 
     REF_VOLTAGE = 2.5
 
-    # TODO: MOVEME
-    # conf = {
-    #     'battery': 5,
-    #     '50v': 4,
-    #     '33v': 3,
-    # }
-
     def __init__(self) -> None:
-        self.pin_battery = base_module.AnalogBoardPin('battery')
-        self.pin_50v = base_module.AnalogBoardPin('50v')
-        self.pin_33v = base_module.AnalogBoardPin('33v')
+        self.pin_battery = base_module.AnalogBoardPin(base_module.AnalogBoardPins.u_bat)
+        self.pin_50v = base_module.AnalogBoardPin(base_module.AnalogBoardPins.u_5v)
+        self.pin_33v = base_module.AnalogBoardPin(base_module.AnalogBoardPins.u_3v3)
         self.magic_bat = 1 / spannungsteiler_reverse(to_voltage(1, ref_voltage=self.REF_VOLTAGE), r1=2.2, r2=22)
         self.magic_50v = 1 / spannungsteiler_reverse(to_voltage(1, ref_voltage=self.REF_VOLTAGE), r1=2.2, r2=4.7)
         self.magic_33v = 1 / spannungsteiler_reverse(to_voltage(1, ref_voltage=self.REF_VOLTAGE), r1=2.2, r2=2.7)
