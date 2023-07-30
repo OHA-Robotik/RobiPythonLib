@@ -2,28 +2,27 @@
 
 from time import sleep
 
-from Robi42Lib.i2c_connections import laser_and_conns_i2c
-from Robi42Lib.lib.machine_i2c_lcd import I2cLcd
+from . import base_module
 
 
-class LCD(I2cLcd):
+class LCD(base_module.BaseModule):
     def __init__(self):
-        super().__init__(laser_and_conns_i2c, 0x3F, 2, 16)
+        self.lcd = base_module.BoardDevices('lcd')
 
     def turn_off(self):
-        self.clear()
-        self.backlight_off()
-        self.display_off()
+        self.lcd.clear()
+        self.lcd.backlight_off()
+        self.lcd.display_off()
 
     def turn_on(self):
-        self.backlight_on()
-        self.display_on()
+        self.lcd.backlight_on()
+        self.lcd.display_on()
 
     def put_large_str(self, s: str, delay: int = 1):
         for i in range(0, len(s), 32):
             self.clear()
             if i + 32 < len(s):
-                self.putstr(s[i: i + 32])
+                self.lcd.putstr(s[i: i + 32])
             else:
-                self.putstr(s[i:])
+                self.lcd.putstr(s[i:])
             sleep(delay)

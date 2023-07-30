@@ -1,12 +1,17 @@
-from Robi42Lib.mcps import analog_mcp
+from . import base_module
 
 
-class Poti:
+class Poti(base_module.BaseModule):
+
+    conf = {
+        'poti': 6
+    }
+
     def __init__(self) -> None:
-        pass
+        self.poti_pin = base_module.AnalogBoardPin('poti')
 
     def get_raw_value(self) -> int:
-        return analog_mcp.read(6)
+        return self.poti_pin.read()
 
     def get_value(self) -> float:
         raw = self.get_raw_value()
