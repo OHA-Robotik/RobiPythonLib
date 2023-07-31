@@ -5,8 +5,10 @@ from uasyncio import sleep_ms as sleep_ms_async
 
 from ..abstract import notes_and_freqs as naf
 
+from . import base_module
 
-class Piezo:
+
+class Piezo(base_module.BaseModule):
     def __init__(self):
         self.piezo = PWM(Pin(22, Pin.OUT))
         self.piezo.freq(440)

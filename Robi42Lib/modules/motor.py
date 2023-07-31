@@ -2,7 +2,7 @@ from time import sleep_ms
 
 from machine import Pin, PWM
 
-from . import piopwm
+from ..abstract import piopwm
 
 from . import base_module
 
