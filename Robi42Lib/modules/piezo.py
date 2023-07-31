@@ -3,7 +3,7 @@ from time import sleep_ms
 from machine import Pin, PWM
 from uasyncio import sleep_ms as sleep_ms_async
 
-import Robi42Lib.notes_and_freqs as naf
+from ..abstract import notes_and_freqs as naf
 
 
 class Piezo:

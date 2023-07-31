@@ -2,15 +2,27 @@ from time import sleep_ms
 
 from machine import Pin, PWM
 
-from Robi42Lib.mcps import motor_and_button_mcp
-from Robi42Lib.piopwm import PIOPWM
+from . import piopwm
+
+from . import base_module
 
 
 class Motor:
     __current_freq: int
 
-    def __init__(self, pin: int, step_pwm: PIOPWM | PWM):
-        self.__pin = pin
+    def __init__(self,
+            pin_en: base_module.DigitalBoardPin,
+            pin_m0: base_module.DigitalBoardPin,
+            pin_m1: base_module.DigitalBoardPin,
+            pin_m2: base_module.DigitalBoardPin,
+            pin_dir: base_module.DigitalBoardPin,
+            step_pwm: piopwm.PIOPWM | PWM
+        ):
+        self.__pin_en = pin_en
+        self.__pin_m0 = pin_m0
+        self.__pin_m1 = pin_m1
+        self.__pin_m2 = pin_m2
+        self.__pin_dir = pin_dir
         self._step_pwm = step_pwm
 
         self.disable()
@@ -19,17 +31,19 @@ class Motor:
         self.set_direction(True)
 
     def enable(self):
-        motor_and_button_mcp.digital_write(self.__pin, 0)
+        self.__pin_en.off()
 
     def disable(self):
-        motor_and_button_mcp.digital_write(self.__pin, 1)
+        self.__pin_en.on()
 
     def set_freq(self, freq: int):
         self.__current_freq = freq
         self._step_pwm.freq(freq)
 
     def set_stepping_size(self, m0: bool, m1: bool, m2: bool):
-        ...
+        self.__pin_m0.value(m0)
+        self.__pin_m1.value(m1)
+        self.__pin_m2.value(m2)
 
     def set_direction(self, direction: bool):
         ...
@@ -57,33 +71,38 @@ class Motor:
 class MotorLeft(Motor):
 
     def __init__(self):
-        super().__init__(14, PIOPWM(20, 420))
-
-    def set_stepping_size(self, m0: bool, m1: bool, m2: bool):
-        motor_and_button_mcp.digital_write(0, m0)
-        motor_and_button_mcp.digital_write(1, m1)
-        motor_and_button_mcp.digital_write(2, m2)
+        super().__init__(
+            pin_en=base_module.DigitalBoardPin(base_module.DigitalBoardPins.ml_en),
+            pin_m0=base_module.DigitalBoardPin(base_module.DigitalBoardPins.ml_m0),
+            pin_m1=base_module.DigitalBoardPin(base_module.DigitalBoardPins.ml_m1),
+            pin_m2=base_module.DigitalBoardPin(base_module.DigitalBoardPins.ml_m2),
+            pin_dir=base_module.DigitalBoardPin(base_module.DigitalBoardPins.ml_dir),
+            step_pwm=piopwm.PIOPWM(20, 420),
+        )
 
     def set_direction(self, direction: bool):
-        motor_and_button_mcp.digital_write(3, direction)
+        self.__pin_dir.value(direction)
 
 
 class MotorRight(Motor):
 
     def __init__(self) -> None:
-        super().__init__(15, PWM(Pin(21, Pin.OUT)))
-        self._step_pwm.duty_u16(32768)
-
-    def set_stepping_size(self, m0: bool, m1: bool, m2: bool):
-        motor_and_button_mcp.digital_write(4, m0)
-        motor_and_button_mcp.digital_write(5, m1)
-        motor_and_button_mcp.digital_write(6, m2)
+        step_pwm = PWM(Pin(21, Pin.OUT))
+        step_pwm.duty_u16(32768)
+        super().__init__(
+            en_pin=base_module.DigitalBoardPin(base_module.DigitalBoardPins.mr_en),
+            pin_m0=base_module.DigitalBoardPin(base_module.DigitalBoardPins.mr_m0),
+            pin_m1=base_module.DigitalBoardPin(base_module.DigitalBoardPins.mr_m1),
+            pin_m2=base_module.DigitalBoardPin(base_module.DigitalBoardPins.mr_m2),
+            pin_dir=base_module.DigitalBoardPin(base_module.DigitalBoardPins.mr_dir),
+            step_pwm=step_pwm,
+        )
 
     def set_direction(self, direction: bool):
-        motor_and_button_mcp.digital_write(7, not direction)
+        self.__pin_dir.value(not direction)
 
 
-class Motors:
+class Motors(base_module.BaseModule):
     DIR_FORWARD = True
     DIR_BACKWARD = False
 
