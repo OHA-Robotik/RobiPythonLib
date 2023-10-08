@@ -6,7 +6,7 @@ from ..device_drivers.impl import vl53l0x as vl53l0x_driver
 
 class LaserSensor(base_module.BaseModule):
 
-    @base_module.needs_i2c_hardware('VL53L0X')
+    @base_module.get_first_i2c_hardware('VL53L0X')
     def read_distance_mm(self, VL53L0X: vl53l0x_driver.VL53L0X | None=None):
         """
         Returns the distance in mm.
