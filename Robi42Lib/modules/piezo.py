@@ -64,4 +64,4 @@ class SampleTones:
 
     @staticmethod
     def get_tone(note: str) -> Tone:
-        return Tone(note, naf.tones[note])
+        return Tone(note, int(naf.tones[note]))
