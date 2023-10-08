@@ -11,13 +11,13 @@ class Motor:
     __current_freq: int
 
     def __init__(self,
-            pin_en: base_module.DigitalBoardPin,
-            pin_m0: base_module.DigitalBoardPin,
-            pin_m1: base_module.DigitalBoardPin,
-            pin_m2: base_module.DigitalBoardPin,
-            pin_dir: base_module.DigitalBoardPin,
-            step_pwm: piopwm.PIOPWM | PWM
-        ):
+                 pin_en: base_module.DigitalBoardPin,
+                 pin_m0: base_module.DigitalBoardPin,
+                 pin_m1: base_module.DigitalBoardPin,
+                 pin_m2: base_module.DigitalBoardPin,
+                 pin_dir: base_module.DigitalBoardPin,
+                 step_pwm: piopwm.PIOPWM | PWM
+                 ):
         self.__pin_en = pin_en
         self.__pin_m0 = pin_m0
         self.__pin_m1 = pin_m1
@@ -28,7 +28,7 @@ class Motor:
         self.disable()
         self.set_freq(420)
         self.set_stepping_size(True, True, True)
-        self.set_direction(True)
+        self.set_direction(Motors.DIR_FORWARD)
 
     def enable(self):
         self.__pin_en.off()
@@ -90,7 +90,7 @@ class MotorRight(Motor):
         step_pwm = PWM(Pin(21, Pin.OUT))
         step_pwm.duty_u16(32768)
         super().__init__(
-            en_pin=base_module.DigitalBoardPin(base_module.DigitalBoardPins.mr_en),
+            pin_en=base_module.DigitalBoardPin(base_module.DigitalBoardPins.mr_en),
             pin_m0=base_module.DigitalBoardPin(base_module.DigitalBoardPins.mr_m0),
             pin_m1=base_module.DigitalBoardPin(base_module.DigitalBoardPins.mr_m1),
             pin_m2=base_module.DigitalBoardPin(base_module.DigitalBoardPins.mr_m2),
