@@ -1,7 +1,7 @@
 from . import base_module
 
 
-def convert(self, raw: int) -> float:
+def convert(raw: int) -> float:
     if raw < 100:
         return 0
     if raw > 924:
