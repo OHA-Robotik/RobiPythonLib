@@ -1,5 +1,5 @@
-import hardware_manager.manager as hw_manager
-import hardware_manager.platform_description as pltfm_desc
+from ..hardware_manager import manager as hw_manager
+from ..hardware_manager import platform_description as pltfm_desc
 
 
 # redefine for easy access the Hardware
