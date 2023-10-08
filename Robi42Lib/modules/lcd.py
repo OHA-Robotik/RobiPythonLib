@@ -7,6 +7,9 @@ from . import base_module
 
 class LCD(base_module.BaseModule):
 
+    def __init__(self):
+        self.turn_off()
+
     @base_module.get_first_i2c_hardware('HD44780_I2C_driver')
     def configure_cursor(
         self,
