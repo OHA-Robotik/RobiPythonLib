@@ -141,17 +141,17 @@ class DigitalBoardPin():
         DigitalBoardPins.btn_left: (0, 9),
         DigitalBoardPins.btn_right: (0, 10),
 
-        DigitalBoardPins.mr_en: (0, 14),
-        DigitalBoardPins.mr_dir: (0, 3),
-        DigitalBoardPins.mr_m0: (0, 0),
-        DigitalBoardPins.mr_m1: (0, 1),
-        DigitalBoardPins.mr_m2: (0, 2),
+        DigitalBoardPins.mr_en: (0, 15),
+        DigitalBoardPins.mr_dir: (0, 7),
+        DigitalBoardPins.mr_m0: (0, 4),
+        DigitalBoardPins.mr_m1: (0, 5),
+        DigitalBoardPins.mr_m2: (0, 6),
 
-        DigitalBoardPins.ml_en: (0, 15),
-        DigitalBoardPins.ml_dir: (0, 7),
-        DigitalBoardPins.ml_m0: (0, 4),
-        DigitalBoardPins.ml_m1: (0, 5),
-        DigitalBoardPins.ml_m2: (0, 6),
+        DigitalBoardPins.ml_en: (0, 14),
+        DigitalBoardPins.ml_dir: (0, 3),
+        DigitalBoardPins.ml_m0: (0, 0),
+        DigitalBoardPins.ml_m1: (0, 1),
+        DigitalBoardPins.ml_m2: (0, 2),
 
         # chip 1
         DigitalBoardPins.led_sl: (1, 0),
