@@ -40,5 +40,5 @@ class LCD(base_module.BaseModule):
         HD44780_I2C_driver.display_on()
 
     @base_module.get_first_i2c_hardware('HD44780_I2C_driver')
-    def put_str(self, s: str, HD44780_I2C_driver=None):
-        HD44780_I2C_driver.putstr(str)
+    def put_str(self, text: str, HD44780_I2C_driver=None):
+        HD44780_I2C_driver.putstr(text)
