@@ -49,3 +49,5 @@ class Leds(base_module.BaseModule):
         self.backlights = _LedGroup([b_l_pin, b_r_pin])
         self.blinkers = _LedGroup([bl_fl_pin, bl_fr_pin, bl_bl_pin, bl_br_pin])
         self.all = _LedGroup([h_l_pin, h_r_pin, b_l_pin, b_r_pin, bl_fl_pin, bl_fr_pin, bl_bl_pin, bl_br_pin])
+
+        self.all.off()
