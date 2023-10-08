@@ -14,7 +14,7 @@ class MCP23S17(base_driver.SPI_BaseDriver):
 
     # Register addresses (ICON.BANK = 0) as documentined in the technical data sheet at
     # http://ww1.microchip.com/downloads/en/DeviceDoc/21952b.pdf
-    MCP23S17_IODIRA = 0
+    MCP23S17_IODIRA = 0x00
     MCP23S17_IODIRB = 0x01
     MCP23S17_IPOLA = 0x02
     MCP23S17_IPOLB = 0x03
@@ -74,10 +74,6 @@ class MCP23S17(base_driver.SPI_BaseDriver):
         self._write_register(MCP23S17.MCP23S17_IOCON, MCP23S17.IOCON_INIT)
         self._write_register(MCP23S17.MCP23S17_IOCON, MCP23S17.IOCON_HAEN)
 
-    def close(self):
-        """Closes the SPI connection that the MCP23S17 component is using."""
-        self.is_initialized = False
-
     def set_direction(self, pin: int, direction: bool):
         """
         Sets the direction for a given pin.
@@ -87,14 +83,13 @@ class MCP23S17(base_driver.SPI_BaseDriver):
         """
         assert pin < 16 and self.is_initialized
 
+        noshifts = pin & 0x07
         if pin < 8:
             register = MCP23S17.MCP23S17_IODIRA
             data = self._IODIRA
-            noshifts = pin
         else:
             register = MCP23S17.MCP23S17_IODIRB
             data = self._IODIRB
-            noshifts = pin & 0x07
 
         if direction:
             data |= 1 << noshifts
@@ -118,9 +113,9 @@ class MCP23S17(base_driver.SPI_BaseDriver):
             self.set_pullup_PORTA(bitmask)
         else:  # 8-15 is PORT_B
             if enable:
-                bitmask = self.port_a_pullup_status | (1 << (pin - 8))
+                bitmask = self.port_b_pullup_status | (1 << (pin - 8))
             else:
-                bitmask = self.port_a_pullup_status & (0xFF ^ (1 << (pin - 8)))
+                bitmask = self.port_b_pullup_status & (0xFF ^ (1 << (pin - 8)))
             self.set_pullup_PORTB(bitmask)
 
     def digital_read(self, pin: int) -> bool:
@@ -137,10 +132,10 @@ class MCP23S17(base_driver.SPI_BaseDriver):
         if pin < 8:
             self._GPIOA = self._read_register(MCP23S17.MCP23S17_GPIOA)
             return (self._GPIOA & (1 << pin)) != 0
-
-        self._GPIOB = self._read_register(MCP23S17.MCP23S17_GPIOB)
-        pin &= 0x07
-        return (self._GPIOB & (1 << pin)) != 0
+        else:
+            self._GPIOB = self._read_register(MCP23S17.MCP23S17_GPIOB)
+            pin &= 0x07
+            return (self._GPIOB & (1 << pin)) != 0
 
     def digital_write(self, pin: int, level: bool):
         """
@@ -182,7 +177,7 @@ class MCP23S17(base_driver.SPI_BaseDriver):
         assert self.is_initialized
 
         self._write_register(MCP23S17.MCP23S17_IODIRB, data)
-        self._IODIRA = data
+        self._IODIRB = data
 
     def set_pullup_PORTA(self, data):
         assert self.is_initialized
@@ -224,28 +219,28 @@ class MCP23S17(base_driver.SPI_BaseDriver):
         self._write_register(MCP23S17.MCP23S17_GPIOB, data)
         self._GPIOB = data
 
-    def write_GPIO(self, data):
-        """Sets the data port value for all pins.
-        Parameters:
-        data - The 16-bit value to be set.
-        """
-        assert self.is_initialized
+    # def write_GPIO(self, data):
+    #     """Sets the data port value for all pins.
+    #     Parameters:
+    #     data - The 16-bit value to be set.
+    #     """
+    #     assert self.is_initialized
 
-        self._GPIOA = data & 0xFF
-        self._GPIOB = data >> 8
-        self._write_register_word(MCP23S17.MCP23S17_GPIOA, data)
+    #     self._GPIOA = data & 0xFF
+    #     self._GPIOB = data >> 8
+    #     self._write_register_word(MCP23S17.MCP23S17_GPIOA, data)
 
-    def read_GPIO(self):
-        """Reads the data port value of all pins.
-        Returns:
-         - The 16-bit data port value
-        """
-        assert self.is_initialized
+    # def read_GPIO(self):
+    #     """Reads the data port value of all pins.
+    #     Returns:
+    #      - The 16-bit data port value
+    #     """
+    #     assert self.is_initialized
 
-        data = self._read_register_word(MCP23S17.MCP23S17_GPIOA)
-        self._GPIOA = data & 0xFF
-        self._GPIOB = data >> 8
-        return data
+    #     data = self._read_register_word(MCP23S17.MCP23S17_GPIOA)
+    #     self._GPIOA = data & 0xFF
+    #     self._GPIOB = data >> 8
+    #     return data
 
     def _write_register(self, register, value):
         assert self.is_initialized
