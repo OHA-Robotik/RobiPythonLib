@@ -4,10 +4,10 @@ from . import base_module
 class Poti(base_module.BaseModule):
 
     def __init__(self) -> None:
-        self.poti_pin = base_module.AnalogBoardPin(base_module.AnalogBoardPins.poti)
+        self.__poti_pin = base_module.AnalogBoardPin(base_module.AnalogBoardPins.poti)
 
     def get_raw_value(self) -> int:
-        return self.poti_pin.read_raw()
+        return self.__poti_pin.read_raw()
 
     def get_value(self) -> float:
         raw = self.get_raw_value()
