@@ -7,23 +7,38 @@ from . import base_module
 
 class LCD(base_module.BaseModule):
 
-    @base_module.need_i2c_hardware('hd44780_i2c')
-    def turn_off(self, hd44780_i2c=None):
-        hd44780_i2c.clear()
-        hd44780_i2c.backlight_off()
-        hd44780_i2c.display_off()
+    @base_module.get_first_i2c_hardware('HD44780_I2C_driver')
+    def configure_cursor(
+        self,
+        show_cursor,
+        blink_cursor,
+        HD44780_I2C_driver=None
+    ):
+        if show_cursor:
+            HD44780_I2C_driver.show_cursor()
+        else:
+            HD44780_I2C_driver.hide_cursor()
 
-    @base_module.need_i2c_hardware('hd44780_i2c')
-    def turn_on(self, hd44780_i2c=None):
-        hd44780_i2c.backlight_on()
-        hd44780_i2c.display_on()
+        if blink_cursor:
+            HD44780_I2C_driver.blink_cursor_on()
+        else:
+            HD44780_I2C_driver.blink_cursor_off()
 
-    @base_module.need_i2c_hardware('hd44780_i2c')
-    def put_large_str(self, s: str, delay: int = 1, hd44780_i2c=None):
-        for i in range(0, len(s), 32):
-            self.clear()
-            if i + 32 < len(s):
-                hd44780_i2c.putstr(s[i: i + 32])
-            else:
-                hd44780_i2c.putstr(s[i:])
-            sleep(delay)
+    @base_module.get_first_i2c_hardware('HD44780_I2C_driver')
+    def set_cursor(self, x_pos: int, y_pos: int , HD44780_I2C_driver=None):
+        HD44780_I2C_driver.move_to(x_pos, y_pos)
+
+    @base_module.get_first_i2c_hardware('HD44780_I2C_driver')
+    def turn_off(self, HD44780_I2C_driver=None):
+        HD44780_I2C_driver.clear()
+        HD44780_I2C_driver.backlight_off()
+        HD44780_I2C_driver.display_off()
+
+    @base_module.get_first_i2c_hardware('HD44780_I2C_driver')
+    def turn_on(self, HD44780_I2C_driver=None):
+        HD44780_I2C_driver.backlight_on()
+        HD44780_I2C_driver.display_on()
+
+    @base_module.get_first_i2c_hardware('HD44780_I2C_driver')
+    def put_str(self, s: str, HD44780_I2C_driver=None):
+        HD44780_I2C_driver.putstr(str)
