@@ -7,7 +7,7 @@ from ..abstract import piopwm
 from . import base_module
 
 
-class Motor:
+class _Motor:
     __current_freq: int
 
     def __init__(self,
@@ -68,7 +68,7 @@ class Motor:
         return self.__current_freq
 
 
-class MotorLeft(Motor):
+class _MotorLeft(_Motor):
 
     def __init__(self):
         super().__init__(
@@ -84,7 +84,7 @@ class MotorLeft(Motor):
         self.__pin_dir.value(direction)
 
 
-class MotorRight(Motor):
+class _MotorRight(_Motor):
 
     def __init__(self) -> None:
         step_pwm = PWM(Pin(21, Pin.OUT))
@@ -107,8 +107,8 @@ class Motors(base_module.BaseModule):
     DIR_BACKWARD = False
 
     def __init__(self) -> None:
-        self.left = MotorLeft()
-        self.right = MotorRight()
+        self.left = _MotorLeft()
+        self.right = _MotorRight()
 
     def disable(self):
         self.left.disable()

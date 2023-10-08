@@ -1,7 +1,7 @@
 from . import base_module
 
 
-class LedGroup:
+class _LedGroup:
     def __init__(self, leds: list[base_module.DigitalBoardPin]):
         self.__pins = leds
 
@@ -37,15 +37,15 @@ class Leds(base_module.BaseModule):
         bl_bl_pin = base_module.DigitalBoardPin(base_module.DigitalBoardPins.led_bl_lh)
         bl_br_pin = base_module.DigitalBoardPin(base_module.DigitalBoardPins.led_bl_rh)
 
-        self.headlight_left = LedGroup([h_l_pin])
-        self.headlight_right = LedGroup([h_r_pin])
-        self.blinker_front_left = LedGroup([bl_fl_pin])
-        self.blinker_front_right = LedGroup([bl_fr_pin])
-        self.blinker_back_left = LedGroup([bl_bl_pin])
-        self.blinker_back_right = LedGroup([bl_br_pin])
-        self.backlight_left = LedGroup([b_l_pin])
-        self.backlight_right = LedGroup([b_r_pin])
-        self.headlights = LedGroup([h_l_pin, h_r_pin])
-        self.backlights = LedGroup([b_l_pin, b_r_pin])
-        self.blinkers = LedGroup([bl_fl_pin, bl_fr_pin, bl_bl_pin, bl_br_pin])
-        self.all = LedGroup([h_l_pin, h_r_pin, b_l_pin, b_r_pin, bl_fl_pin, bl_fr_pin, bl_bl_pin, bl_br_pin])
+        self.headlight_left = _LedGroup([h_l_pin])
+        self.headlight_right = _LedGroup([h_r_pin])
+        self.blinker_front_left = _LedGroup([bl_fl_pin])
+        self.blinker_front_right = _LedGroup([bl_fr_pin])
+        self.blinker_back_left = _LedGroup([bl_bl_pin])
+        self.blinker_back_right = _LedGroup([bl_br_pin])
+        self.backlight_left = _LedGroup([b_l_pin])
+        self.backlight_right = _LedGroup([b_r_pin])
+        self.headlights = _LedGroup([h_l_pin, h_r_pin])
+        self.backlights = _LedGroup([b_l_pin, b_r_pin])
+        self.blinkers = _LedGroup([bl_fl_pin, bl_fr_pin, bl_bl_pin, bl_br_pin])
+        self.all = _LedGroup([h_l_pin, h_r_pin, b_l_pin, b_r_pin, bl_fl_pin, bl_fr_pin, bl_bl_pin, bl_br_pin])
