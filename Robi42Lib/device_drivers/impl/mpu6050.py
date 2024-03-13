@@ -275,7 +275,7 @@ class MPU6050(base_driver.I2C_BaseDriver):
         """
         Update gyroscope Vector3d object
         """
-        self.get_accel_irq()
+        self.get_gyro_irq()
         scale = (131, 65.5, 32.8, 16.4)
         self._gyro._vector[0] = self._gyro._ivector[0] / scale[self.gyro_range]
         self._gyro._vector[1] = self._gyro._ivector[1] / scale[self.gyro_range]
