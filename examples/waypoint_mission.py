@@ -42,14 +42,15 @@ class MissionInstruction:
         self.target_velocity = target_velocity
         self.acceleration = acceleration
 
-        self.acceleration_time = target_velocity / acceleration
-        self.acceleration_distance = 0.5 * acceleration * self.acceleration_time**2
+        if acceleration != 0:
+            self.acceleration_time = target_velocity / acceleration
+            self.acceleration_distance = 0.5 * acceleration * self.acceleration_time**2
 
 
 class WaypointMission:
 
     STOP_TIME = 0.1  # s
-    ROT_SPEED = 0.05  # m/s
+    ROT_SPEED = 0.075  # m/s
 
     WHEEL_RADIUS = 0.035  # m
 
@@ -102,7 +103,7 @@ class WaypointMission:
         # start = time.time_ns()
         while (((not decel) and v < to_v) or (decel and v > to_v)) and s < s_limit:
             rot += self.gyro.z() * dt
-            ausgleich = abs(rot / 25)
+            ausgleich = abs(rot * (v / 50))
             if rot > 0:
                 self.set_v(v - ausgleich, True, False)
                 self.set_v(v + ausgleich, False, True)
@@ -136,7 +137,7 @@ class WaypointMission:
 
         while s < distance_to_drive:
             rot += self.gyro.z() * dt
-            ausgleich = abs(rot / 25)
+            ausgleich = abs(rot * (managed_velocity / 50))
             if rot > 0:
                 self.set_v(managed_velocity - ausgleich, True, False)
                 self.set_v(managed_velocity + ausgleich, False, True)
