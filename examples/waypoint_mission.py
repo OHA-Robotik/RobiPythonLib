@@ -9,7 +9,6 @@ BWD = True
 
 
 class Gyro:
-
     run = True
     z_cal = 0
 
@@ -29,13 +28,22 @@ class Gyro:
         self.z_cal = z_sum / iterations
 
 
+class RobiConfig:
+    wheel_radius: float  # m
+    track_width: float  # The distance between the center lines of the two wheels. Unit: m
+
+    def __init__(self, wheel_radius: float, track_width: float):
+        self.wheel_radius = wheel_radius
+        self.track_width = track_width
+
+
 class MissionInstruction:
     def __init__(
-        self,
-        rotation: float,
-        distance: float,
-        target_velocity: float,
-        acceleration: float,
+            self,
+            rotation: float,
+            distance: float,
+            target_velocity: float,
+            acceleration: float,
     ):
         self.rotation = rotation
         self.distance = distance
@@ -44,18 +52,16 @@ class MissionInstruction:
 
         if acceleration != 0:
             self.acceleration_time = target_velocity / acceleration
-            self.acceleration_distance = 0.5 * acceleration * self.acceleration_time**2
+            self.acceleration_distance = 0.5 * acceleration * self.acceleration_time ** 2
 
 
 class WaypointMission:
-
     STOP_TIME = 0.1  # s
     ROT_SPEED = 0.075  # m/s
 
-    WHEEL_RADIUS = 0.035  # m
-
-    def __init__(self, robi: Robi42, instructions: list[MissionInstruction]) -> None:
+    def __init__(self, robi: Robi42, robi_config: RobiConfig, instructions: list[MissionInstruction]) -> None:
         self.instructions = instructions
+        self.robi_config = robi_config
         self.robi = robi
         self.robi.motors.set_stepping_size(True, True, True)
         self.gyro = Gyro()
@@ -80,7 +86,7 @@ class WaypointMission:
                 rotation += self.gyro.z() * DT
 
     def set_v(self, v: float, left=True, right=True):
-        f = int(v / (1.8 / 32 * (math.pi / 180) * self.WHEEL_RADIUS))
+        f = int(v / (1.8 / 32 * (math.pi / 180) * self.robi_config.wheel_radius))
 
         if f < 7:
             self.robi.motors.disable()
@@ -160,7 +166,6 @@ class WaypointMission:
         self.gyro.calibrate()
 
         for instruction in self.instructions:
-
             time.sleep(self.STOP_TIME)
             self.turn(instruction.rotation)
             self.drive(instruction)
@@ -172,16 +177,17 @@ class WaypointMission:
 PATH1 = [MissionInstruction(0, 5, 2, 0.2)]
 
 PATH2 = [
-    MissionInstruction(0, 2, 1, 0.01),
-] + [
-    MissionInstruction(180, 2, 1, 0.5),
-    MissionInstruction(180, 2, 1, 0.5),
-] * 5
+            MissionInstruction(0, 2, 1, 0.01),
+        ] + [
+            MissionInstruction(180, 2, 1, 0.5),
+            MissionInstruction(180, 2, 1, 0.5),
+        ] * 5
 
 
 def main():
     r = Robi42()
-    wm = WaypointMission(r, PATH1)
+    config = RobiConfig(0.035, 0.147)
+    wm = WaypointMission(r, config, PATH1)
     wm.start()
 
 
