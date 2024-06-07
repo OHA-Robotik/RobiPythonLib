@@ -1,7 +1,6 @@
 from Robi42Lib.robi42 import Robi42
 from machine import Pin, I2C
 from Robi42Lib.device_drivers.impl.mpu6050 import bytes_toint
-import time
 import math
 
 FWD = False
@@ -38,14 +37,11 @@ class RobiConfig:
 
 
 class MissionInstruction:
-    def __init__(
-            self,
-            rotation: float,
-            distance: float,
-            target_velocity: float,
-            acceleration: float,
-    ):
-        self.rotation = rotation
+    ...
+
+
+class DriveInstruction(MissionInstruction):
+    def __init__(self, distance: float, target_velocity: float, acceleration: float):
         self.distance = distance
         self.target_velocity = target_velocity
         self.acceleration = acceleration
@@ -55,9 +51,22 @@ class MissionInstruction:
             self.acceleration_distance = 0.5 * acceleration * self.acceleration_time ** 2
 
 
+class TurnInstruction(MissionInstruction):
+    def __init__(self, left: bool, inner_radius: float, turn_degree: float):
+        self.left = left
+        self.inner_radius = inner_radius
+        self.turn_degree = turn_degree
+        self.distance_to_drive_on_inner_radius = (2 * math.pi * inner_radius) * (turn_degree / 360)
+
+
+class InstructionResult:
+    def __init__(self, managed_velocity: float, covered_distance: float):
+        self.managed_velocity = managed_velocity
+        self.covered_distance = covered_distance
+
+
 class WaypointMission:
     STOP_TIME = 0.1  # s
-    ROT_SPEED = 0.075  # m/s
 
     def __init__(self, robi: Robi42, robi_config: RobiConfig, instructions: list[MissionInstruction]) -> None:
         self.instructions = instructions
@@ -66,36 +75,46 @@ class WaypointMission:
         self.robi.motors.set_stepping_size(True, True, True)
         self.gyro = Gyro()
 
-    def turn(self, degrees: float):
-        if degrees == 0:
-            return
+    def turn(self, prev_inst_result: InstructionResult, turn_instruction: TurnInstruction):
 
-        self.set_v(self.ROT_SPEED)
+        outer_radius = turn_instruction.inner_radius + self.robi_config.track_width
+        distance_to_drive_on_outer_radius = (2 * math.pi * outer_radius) * (turn_instruction.turn_degree / 360)
+
+        outer_velocity = prev_inst_result.managed_velocity
+        time_for_completion = distance_to_drive_on_outer_radius / outer_velocity
+        inner_velocity = turn_instruction.distance_to_drive_on_inner_radius / time_for_completion
+
+        if turn_instruction.left:
+            self.set_v(inner_velocity, right=False)
+            self.set_v(outer_velocity, left=False)
+        else:
+            self.set_v(inner_velocity, left=False)
+            self.set_v(outer_velocity, right=False)
+
         rotation = 0
 
-        left = degrees < 0
-        self.robi.motors.right.set_direction(not left)
-        self.robi.motors.left.set_direction(left)
+        DT = 0.0028  # s Exakt ausprobiert
 
-        DT = 0.0002475  # m Exakt ausprobiert
-        if left:
-            while rotation > degrees:
-                rotation += self.gyro.z() * DT
-        else:
-            while rotation < degrees:
-                rotation += self.gyro.z() * DT
+        while rotation < turn_instruction.turn_degree:
+            rotation += abs(self.gyro.z()) * DT
+
+        return InstructionResult(inner_velocity, turn_instruction.distance_to_drive_on_inner_radius)
 
     def set_v(self, v: float, left=True, right=True):
         f = int(v / (1.8 / 32 * (math.pi / 180) * self.robi_config.wheel_radius))
 
-        if f < 7:
-            self.robi.motors.disable()
-        else:
-            self.robi.motors.enable()
-            if left:
-                self.robi.motors.left.set_freq(f)
-            if right:
-                self.robi.motors.right.set_freq(f)
+        if left:
+            if f < 7:
+                self.robi.motors.left.disable()
+                return
+            self.robi.motors.left.enable()
+            self.robi.motors.left.set_freq(f)
+        if right:
+            if f < 7:
+                self.robi.motors.right.disable()
+                return
+            self.robi.motors.right.enable()
+            self.robi.motors.right.set_freq(f)
 
     def accelerate(self, a: float, from_v: float, to_v: float, s_limit: float = 1000):
 
@@ -111,83 +130,89 @@ class WaypointMission:
             rot += self.gyro.z() * dt
             ausgleich = abs(rot * (v / 50))
             if rot > 0:
-                self.set_v(v - ausgleich, True, False)
-                self.set_v(v + ausgleich, False, True)
+                self.set_v(v - ausgleich, right=False)
+                self.set_v(v + ausgleich, left=False)
             else:
-                self.set_v(v + ausgleich, True, False)
-                self.set_v(v - ausgleich, False, True)
+                self.set_v(v + ausgleich, right=False)
+                self.set_v(v - ausgleich, left=False)
             v += dt * a
             s += dt * v
 
         # end = time.time_ns()
         # print("Actual time:", (end-start) / 1e6, "ms")
 
-        return v, s
+        return InstructionResult(v, s)
 
-    def drive(self, instruction: MissionInstruction):
+    def drive(self, prev_inst_result: InstructionResult, instruction: DriveInstruction):
 
         self.robi.motors.set_direction(FWD)
 
-        managed_velocity, covered_distance = self.accelerate(
-            instruction.acceleration,
-            self.ROT_SPEED,
+        decel = prev_inst_result.managed_velocity > instruction.target_velocity
+
+        acceleration_result = self.accelerate(
+            -instruction.acceleration if decel else instruction.acceleration,
+            prev_inst_result.managed_velocity,
             instruction.target_velocity,
-            instruction.distance / 2,
+            instruction.distance,
         )
 
         rot = 0
         s = 0
         dt = 0.001907
-        distance_to_drive = instruction.distance - covered_distance * 2
+        distance_to_drive = instruction.distance - acceleration_result.covered_distance
         # start = time.time_ns()
 
         while s < distance_to_drive:
             rot += self.gyro.z() * dt
-            ausgleich = abs(rot * (managed_velocity / 50))
+            ausgleich = abs(rot * (acceleration_result.managed_velocity / 50))
             if rot > 0:
-                self.set_v(managed_velocity - ausgleich, True, False)
-                self.set_v(managed_velocity + ausgleich, False, True)
+                self.set_v(acceleration_result.managed_velocity - ausgleich, True, False)
+                self.set_v(acceleration_result.managed_velocity + ausgleich, False, True)
             else:
-                self.set_v(managed_velocity + ausgleich, True, False)
-                self.set_v(managed_velocity - ausgleich, False, True)
-            s += managed_velocity * dt
+                self.set_v(acceleration_result.managed_velocity + ausgleich, True, False)
+                self.set_v(acceleration_result.managed_velocity - ausgleich, False, True)
+            s += acceleration_result.managed_velocity * dt
 
         # end = time.time_ns()
         # print("Actual time:", (end - start) / 1e9, "Should time:", distance_to_drive / managed_velocity)
 
-        self.accelerate(
-            -instruction.acceleration,
-            managed_velocity,
-            0,
-            instruction.distance / 2,
-        )
+        return InstructionResult(acceleration_result.managed_velocity, s + acceleration_result.covered_distance)
+
+    def run_instruction(self, prev_inst_result: InstructionResult, instruction: MissionInstruction):
+        if isinstance(instruction, DriveInstruction):
+            return self.drive(prev_inst_result, instruction)
+        if isinstance(instruction, TurnInstruction):
+            return self.turn(prev_inst_result, instruction)
+        raise NotImplemented()
 
     def start(self):
         self.gyro.calibrate()
 
+        prev_inst_result = InstructionResult(0, 0)
         for instruction in self.instructions:
-            time.sleep(self.STOP_TIME)
-            self.turn(instruction.rotation)
-            self.drive(instruction)
-            self.robi.motors.disable()
+            prev_inst_result = self.run_instruction(prev_inst_result, instruction)
 
         self.robi.motors.disable()
 
 
-PATH1 = [MissionInstruction(0, 5, 2, 0.2)]
-
-PATH2 = [
-            MissionInstruction(0, 2, 1, 0.01),
-        ] + [
-            MissionInstruction(180, 2, 1, 0.5),
-            MissionInstruction(180, 2, 1, 0.5),
-        ] * 5
+PATH1 = [
+    DriveInstruction(0.5, 0.5, 0.4),
+    DriveInstruction(0.2, 0.3, 0.4),
+    TurnInstruction(True, 1, 90),
+    TurnInstruction(False, 0, 180),
+    DriveInstruction(0.5, 0.5, 0.4),
+    DriveInstruction(0.2, 0.3, 0.4),
+    TurnInstruction(False, 0.1, 90),
+    DriveInstruction(1, 0.6, 0.4),
+]
 
 
 def main():
     r = Robi42()
     config = RobiConfig(0.035, 0.147)
     wm = WaypointMission(r, config, PATH1)
+
+    print("Start")
     wm.start()
 
 
