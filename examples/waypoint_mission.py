@@ -52,11 +52,9 @@ class DriveInstruction(MissionInstruction):
 
 
 class TurnInstruction(MissionInstruction):
-    def __init__(self, left: bool, inner_radius: float, turn_degree: float):
+    def __init__(self, left: bool, turn_degree: float):
         self.left = left
-        self.inner_radius = inner_radius
         self.turn_degree = turn_degree
-        self.distance_to_drive_on_inner_radius = (2 * math.pi * inner_radius) * (turn_degree / 360)
 
 
 class InstructionResult:
@@ -77,12 +75,8 @@ class WaypointMission:
 
     def turn(self, prev_inst_result: InstructionResult, turn_instruction: TurnInstruction):
 
-        outer_radius = turn_instruction.inner_radius + self.robi_config.track_width
-        distance_to_drive_on_outer_radius = (2 * math.pi * outer_radius) * (turn_instruction.turn_degree / 360)
-
-        outer_velocity = prev_inst_result.managed_velocity
-        time_for_completion = distance_to_drive_on_outer_radius / outer_velocity
-        inner_velocity = turn_instruction.distance_to_drive_on_inner_radius / time_for_completion
+        inner_velocity = prev_inst_result.managed_velocity * 0.8
+        outer_velocity = prev_inst_result.managed_velocity * 1.2
 
         if turn_instruction.left:
             self.set_v(inner_velocity, right=False)
@@ -98,7 +92,7 @@ class WaypointMission:
         while rotation < turn_instruction.turn_degree:
             rotation += abs(self.gyro.z()) * DT
 
-        return InstructionResult(inner_velocity, turn_instruction.distance_to_drive_on_inner_radius)
+        return InstructionResult(prev_inst_result.managed_velocity, 0)
 
     def set_v(self, v: float, left=True, right=True):
         f = int(v / (1.8 / 32 * (math.pi / 180) * self.robi_config.wheel_radius))
@@ -198,11 +192,11 @@ class WaypointMission:
 PATH1 = [
     DriveInstruction(0.5, 0.5, 0.4),
     DriveInstruction(0.2, 0.3, 0.4),
-    TurnInstruction(True, 1, 90),
-    TurnInstruction(False, 0, 180),
+    TurnInstruction(True, 90),
+    TurnInstruction(False, 180),
     DriveInstruction(0.5, 0.5, 0.4),
     DriveInstruction(0.2, 0.3, 0.4),
-    TurnInstruction(False, 0.1, 90),
+    TurnInstruction(False, 90),
     DriveInstruction(1, 0.6, 0.4),
 ]
 
