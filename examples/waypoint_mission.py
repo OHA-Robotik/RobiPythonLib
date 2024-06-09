@@ -55,9 +55,10 @@ class DriveInstruction(MissionInstruction):
 
 
 class TurnInstruction(MissionInstruction):
-    def __init__(self, left: bool, turn_degree: float):
+    def __init__(self, left: bool, turn_degree: float, radius: float):
         self.left = left
         self.turn_degree = turn_degree
+        self.radius = radius
 
 
 class InstructionResult:
@@ -83,6 +84,7 @@ class Importer:
                 else TurnInstruction(
                     instruction["instruction"]["left"],
                     instruction["instruction"]["turn_degree"],
+                    instruction["instruction"]["radius"],
                 )
             )
             for instruction in data["instructions"]
@@ -107,9 +109,17 @@ class WaypointMission:
     def turn(
         self, prev_inst_result: InstructionResult, turn_instruction: TurnInstruction
     ):
+        turn_degree_rad = turn_instruction.turn_degree * (math.pi / 180)
+        track_width_half = self.robi_config.track_width / 2
 
-        inner_velocity = prev_inst_result.managed_velocity * 0.8
-        outer_velocity = prev_inst_result.managed_velocity * 1.2
+        outer_distance = turn_degree_rad * (turn_instruction.radius + track_width_half)
+        median_distance = turn_degree_rad * turn_instruction.radius
+        inner_distance = turn_degree_rad * (turn_instruction.radius - track_width_half)
+
+        time_for_completion = median_distance / prev_inst_result.managed_velocity
+
+        inner_velocity = inner_distance / time_for_completion
+        outer_velocity = outer_distance / time_for_completion
 
         if turn_instruction.left:
             self.set_v(inner_velocity, right=False)
@@ -120,10 +130,8 @@ class WaypointMission:
 
         rotation = 0
 
-        DT = 0.0028  # s Exakt ausprobiert
-
         while rotation < turn_instruction.turn_degree:
-            rotation += abs(self.gyro.z()) * DT
+            rotation += abs(self.gyro.z()) * 0.003  # s Exakt ausprobiert
 
         return InstructionResult(prev_inst_result.managed_velocity, 0)
 
@@ -238,11 +246,11 @@ class WaypointMission:
 PATH1 = [
     DriveInstruction(0.5, 0.5, 0.4),
     DriveInstruction(0.2, 0.3, 0.4),
-    TurnInstruction(True, 90),
-    TurnInstruction(False, 180),
+    TurnInstruction(True, 90, 0.1),
+    TurnInstruction(False, 180, 0.3),
     DriveInstruction(0.5, 0.5, 0.4),
     DriveInstruction(0.2, 0.3, 0.4),
-    TurnInstruction(False, 90),
+    TurnInstruction(False, 90, 0.1),
     DriveInstruction(1, 0.6, 0.4),
 ]
 
@@ -250,10 +258,14 @@ PATH1 = [
 def main():
     r = Robi42()
 
-    with open("/examples/exported_waypoint_mission.json") as f:
-        data = f.read()
-    decoded = Importer.decode(data)
-    wm = WaypointMission(r, decoded[0], decoded[1])
+    # with open("/examples/exported_waypoint_mission.json") as f:
+    #    data = f.read()
+
+    # decoded = Importer.decode(data)
+    # wm = WaypointMission(r, decoded[0], decoded[1])
+
+    config = RobiConfig(0.035, 0.147)
+    wm = WaypointMission(r, config, PATH1)
 
     print("Start")
     wm.start()
