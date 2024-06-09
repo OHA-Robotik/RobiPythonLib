@@ -1,3 +1,5 @@
+import json
+
 from Robi42Lib.robi42 import Robi42
 from machine import Pin, I2C
 from Robi42Lib.device_drivers.impl.mpu6050 import bytes_toint
@@ -29,15 +31,16 @@ class Gyro:
 
 class RobiConfig:
     wheel_radius: float  # m
-    track_width: float  # The distance between the center lines of the two wheels. Unit: m
+    track_width: (
+        float  # The distance between the center lines of the two wheels. Unit: m
+    )
 
     def __init__(self, wheel_radius: float, track_width: float):
         self.wheel_radius = wheel_radius
         self.track_width = track_width
 
 
-class MissionInstruction:
-    ...
+class MissionInstruction: ...
 
 
 class DriveInstruction(MissionInstruction):
@@ -48,7 +51,7 @@ class DriveInstruction(MissionInstruction):
 
         if acceleration != 0:
             self.acceleration_time = target_velocity / acceleration
-            self.acceleration_distance = 0.5 * acceleration * self.acceleration_time ** 2
+            self.acceleration_distance = 0.5 * acceleration * self.acceleration_time**2
 
 
 class TurnInstruction(MissionInstruction):
@@ -63,17 +66,48 @@ class InstructionResult:
         self.covered_distance = covered_distance
 
 
+class Importer:
+    @staticmethod
+    def decode(json_string: str) -> tuple[RobiConfig, list[MissionInstruction]]:
+        data = json.loads(json_string)
+        return RobiConfig(
+            data["config"]["wheel_radius"], data["config"]["track_width"]
+        ), [
+            (
+                DriveInstruction(
+                    instruction["instruction"]["distance"],
+                    instruction["instruction"]["target_velocity"],
+                    instruction["instruction"]["acceleration"],
+                )
+                if instruction["type"] == "driveInstruction"
+                else TurnInstruction(
+                    instruction["instruction"]["left"],
+                    instruction["instruction"]["turn_degree"],
+                )
+            )
+            for instruction in data["instructions"]
+            for instruction in data["instructions"]
+        ]
+
+
 class WaypointMission:
     STOP_TIME = 0.1  # s
 
-    def __init__(self, robi: Robi42, robi_config: RobiConfig, instructions: list[MissionInstruction]) -> None:
+    def __init__(
+        self,
+        robi: Robi42,
+        robi_config: RobiConfig,
+        instructions: list[MissionInstruction],
+    ) -> None:
         self.instructions = instructions
         self.robi_config = robi_config
         self.robi = robi
         self.robi.motors.set_stepping_size(True, True, True)
         self.gyro = Gyro()
 
-    def turn(self, prev_inst_result: InstructionResult, turn_instruction: TurnInstruction):
+    def turn(
+        self, prev_inst_result: InstructionResult, turn_instruction: TurnInstruction
+    ):
 
         inner_velocity = prev_inst_result.managed_velocity * 0.8
         outer_velocity = prev_inst_result.managed_velocity * 1.2
@@ -160,19 +194,32 @@ class WaypointMission:
             rot += self.gyro.z() * dt
             ausgleich = abs(rot * (acceleration_result.managed_velocity / 50))
             if rot > 0:
-                self.set_v(acceleration_result.managed_velocity - ausgleich, True, False)
-                self.set_v(acceleration_result.managed_velocity + ausgleich, False, True)
+                self.set_v(
+                    acceleration_result.managed_velocity - ausgleich, True, False
+                )
+                self.set_v(
+                    acceleration_result.managed_velocity + ausgleich, False, True
+                )
             else:
-                self.set_v(acceleration_result.managed_velocity + ausgleich, True, False)
-                self.set_v(acceleration_result.managed_velocity - ausgleich, False, True)
+                self.set_v(
+                    acceleration_result.managed_velocity + ausgleich, True, False
+                )
+                self.set_v(
+                    acceleration_result.managed_velocity - ausgleich, False, True
+                )
             s += acceleration_result.managed_velocity * dt
 
         # end = time.time_ns()
         # print("Actual time:", (end - start) / 1e9, "Should time:", distance_to_drive / managed_velocity)
 
-        return InstructionResult(acceleration_result.managed_velocity, s + acceleration_result.covered_distance)
+        return InstructionResult(
+            acceleration_result.managed_velocity,
+            s + acceleration_result.covered_distance,
+        )
 
-    def run_instruction(self, prev_inst_result: InstructionResult, instruction: MissionInstruction):
+    def run_instruction(
+        self, prev_inst_result: InstructionResult, instruction: MissionInstruction
+    ):
         if isinstance(instruction, DriveInstruction):
             return self.drive(prev_inst_result, instruction)
         if isinstance(instruction, TurnInstruction):
@@ -203,8 +250,11 @@ PATH1 = [
 
 def main():
     r = Robi42()
-    config = RobiConfig(0.035, 0.147)
-    wm = WaypointMission(r, config, PATH1)
+
+    with open("/examples/exported_waypoint_mission.json") as f:
+        data = f.read()
+    decoded = Importer.decode(data)
+    wm = WaypointMission(r, decoded[0], decoded[1])
 
     print("Start")
     wm.start()
