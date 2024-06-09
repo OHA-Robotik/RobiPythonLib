@@ -110,11 +110,10 @@ class WaypointMission:
         self, prev_inst_result: InstructionResult, turn_instruction: TurnInstruction
     ):
         turn_degree_rad = turn_instruction.turn_degree * (math.pi / 180)
-        track_width_half = self.robi_config.track_width / 2
 
-        outer_distance = turn_degree_rad * (turn_instruction.radius + track_width_half)
-        median_distance = turn_degree_rad * turn_instruction.radius
-        inner_distance = turn_degree_rad * (turn_instruction.radius - track_width_half)
+        outer_distance = turn_degree_rad * (turn_instruction.radius + self.robi_config.track_width)
+        median_distance = turn_degree_rad * (turn_instruction.radius + self.robi_config.track_width / 2)
+        inner_distance = turn_degree_rad * turn_instruction.radius
 
         time_for_completion = median_distance / prev_inst_result.managed_velocity
 
