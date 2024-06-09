@@ -86,7 +86,6 @@ class Importer:
                 )
             )
             for instruction in data["instructions"]
-            for instruction in data["instructions"]
         ]
 
 
