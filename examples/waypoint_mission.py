@@ -111,8 +111,12 @@ class WaypointMission:
     ):
         turn_degree_rad = turn_instruction.turn_degree * (math.pi / 180)
 
-        outer_distance = turn_degree_rad * (turn_instruction.radius + self.robi_config.track_width)
-        median_distance = turn_degree_rad * (turn_instruction.radius + self.robi_config.track_width / 2)
+        outer_distance = turn_degree_rad * (
+            turn_instruction.radius + self.robi_config.track_width
+        )
+        median_distance = turn_degree_rad * (
+            turn_instruction.radius + self.robi_config.track_width / 2
+        )
         inner_distance = turn_degree_rad * turn_instruction.radius
 
         time_for_completion = median_distance / prev_inst_result.managed_velocity
@@ -257,14 +261,11 @@ PATH1 = [
 def main():
     r = Robi42()
 
-    # with open("/examples/exported_waypoint_mission.json") as f:
-    #    data = f.read()
+    with open("/examples/exported_waypoint_mission.json") as f:
+        data = f.read()
 
-    # decoded = Importer.decode(data)
-    # wm = WaypointMission(r, decoded[0], decoded[1])
-
-    config = RobiConfig(0.035, 0.147)
-    wm = WaypointMission(r, config, PATH1)
+    decoded = Importer.decode(data)
+    wm = WaypointMission(r, decoded[0], decoded[1])
 
     print("Start")
     wm.start()
