@@ -76,15 +76,15 @@ class Importer:
         ), [
             (
                 DriveInstruction(
-                    instruction["instruction"]["distance"],
-                    instruction["instruction"]["target_velocity"],
-                    instruction["instruction"]["acceleration"],
+                    instruction["distance"],
+                    instruction["target_velocity"],
+                    instruction["acceleration"],
                 )
-                if instruction["type"] == "driveInstruction"
+                if instruction["type"] == "drive"
                 else TurnInstruction(
-                    instruction["instruction"]["left"],
-                    instruction["instruction"]["turn_degree"],
-                    instruction["instruction"]["radius"],
+                    instruction["left"],
+                    instruction["turn_degree"],
+                    instruction["radius"],
                 )
             )
             for instruction in data["instructions"]
