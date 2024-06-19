@@ -108,7 +108,10 @@ class WaypointMission:
         self.last_inst_was_turn = False
 
     def turn(
-        self, prev_inst_result: InstructionResult, turn_instruction: TurnInstruction, prev_instruction_was_turn: bool,
+        self,
+        prev_inst_result: InstructionResult,
+        turn_instruction: TurnInstruction,
+        prev_instruction_was_turn: bool,
     ):
         turn_degree_rad = turn_instruction.turn_degree * (math.pi / 180)
 
@@ -119,11 +122,12 @@ class WaypointMission:
 
         if prev_instruction_was_turn:
             inner_velocity = prev_inst_result.managed_velocity
+            time_for_completion = inner_distance / inner_velocity
+            outer_velocity = outer_distance / time_for_completion
         else:
-            time_for_completion = outer_distance / prev_inst_result.managed_velocity
+            outer_velocity = prev_inst_result.managed_velocity
+            time_for_completion = outer_distance / outer_velocity
             inner_velocity = inner_distance / time_for_completion
-
-        outer_velocity = prev_inst_result.managed_velocity
 
         if turn_instruction.left:
             self.set_v(inner_velocity, right=False)
@@ -137,7 +141,7 @@ class WaypointMission:
         while rotation < turn_instruction.turn_degree:
             rotation += abs(self.gyro.z()) * 0.003  # s Exakt ausprobiert
 
-        return InstructionResult(prev_inst_result.managed_velocity, 0)
+        return InstructionResult(inner_velocity, 0)
 
     def set_v(self, v: float, left=True, right=True):
         f = int(v / (1.8 / 32 * (math.pi / 180) * self.robi_config.wheel_radius))
