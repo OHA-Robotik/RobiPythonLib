@@ -105,24 +105,25 @@ class WaypointMission:
         self.robi = robi
         self.robi.motors.set_stepping_size(True, True, True)
         self.gyro = Gyro()
+        self.last_inst_was_turn = False
 
     def turn(
-        self, prev_inst_result: InstructionResult, turn_instruction: TurnInstruction
+        self, prev_inst_result: InstructionResult, turn_instruction: TurnInstruction, prev_instruction_was_turn: bool,
     ):
         turn_degree_rad = turn_instruction.turn_degree * (math.pi / 180)
 
         outer_distance = turn_degree_rad * (
             turn_instruction.radius + self.robi_config.track_width
         )
-        median_distance = turn_degree_rad * (
-            turn_instruction.radius + self.robi_config.track_width / 2
-        )
         inner_distance = turn_degree_rad * turn_instruction.radius
 
-        time_for_completion = median_distance / prev_inst_result.managed_velocity
+        if prev_instruction_was_turn:
+            inner_velocity = prev_inst_result.managed_velocity
+        else:
+            time_for_completion = outer_distance / prev_inst_result.managed_velocity
+            inner_velocity = inner_distance / time_for_completion
 
-        inner_velocity = inner_distance / time_for_completion
-        outer_velocity = outer_distance / time_for_completion
+        outer_velocity = prev_inst_result.managed_velocity
 
         if turn_instruction.left:
             self.set_v(inner_velocity, right=False)
@@ -231,10 +232,14 @@ class WaypointMission:
         self, prev_inst_result: InstructionResult, instruction: MissionInstruction
     ):
         if isinstance(instruction, DriveInstruction):
-            return self.drive(prev_inst_result, instruction)
-        if isinstance(instruction, TurnInstruction):
-            return self.turn(prev_inst_result, instruction)
-        raise NotImplemented()
+            res = self.drive(prev_inst_result, instruction)
+            self.last_inst_was_turn = False
+        elif isinstance(instruction, TurnInstruction):
+            res = self.turn(prev_inst_result, instruction, self.last_inst_was_turn)
+            self.last_inst_was_turn = True
+        else:
+            raise NotImplemented()
+        return res
 
     def start(self):
         self.gyro.calibrate()
