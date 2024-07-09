@@ -190,10 +190,8 @@ class WaypointMission:
 
         self.robi.motors.set_direction(FWD)
 
-        decel = prev_inst_result.managed_velocity > instruction.target_velocity
-
         acceleration_result = self.accelerate(
-            -instruction.acceleration if decel else instruction.acceleration,
+            instruction.acceleration,
             prev_inst_result.managed_velocity,
             instruction.target_velocity,
             instruction.distance,
