@@ -41,6 +41,18 @@ class _Motor:
         self._step_pwm.freq(freq)
 
     def set_stepping_size(self, m0: bool, m1: bool, m2: bool):
+        """
+        |m0|m1|m2|Step Mode|
+        |---|---|---|---|
+        |0|0|0|Full step (2-phase excitation) with 71% current|
+        |1|0|0|1/2 step (1-2 phase excitation)|
+        |0|1|0|1/4 step (W1-2 phase excitation)|
+        |1|1|0|8 microsteps/step|
+        |0|0|1|16 microsteps/step|
+        |1|0|1|32 microsteps/step|
+        |0|1|1|32 microsteps/step|
+        |1|1|1|32 microsteps/step|
+        """
         self.__pin_m0.value(m0)
         self.__pin_m1.value(m1)
         self.__pin_m2.value(m2)
@@ -123,6 +135,18 @@ class Motors(base_module.BaseModule):
         self.right.set_freq(freq)
 
     def set_stepping_size(self, m0: bool, m1: bool, m2: bool):
+        """
+        |m0|m1|m2|Step Mode|
+        |---|---|---|---|
+        |0|0|0|Full step (2-phase excitation) with 71% current|
+        |1|0|0|1/2 step (1-2 phase excitation)|
+        |0|1|0|1/4 step (W1-2 phase excitation)|
+        |1|1|0|8 microsteps/step|
+        |0|0|1|16 microsteps/step|
+        |1|0|1|32 microsteps/step|
+        |0|1|1|32 microsteps/step|
+        |1|1|1|32 microsteps/step|
+        """
         self.left.set_stepping_size(m0, m1, m2)
         self.right.set_stepping_size(m0, m1, m2)
 
