@@ -10,14 +10,15 @@ from . import base_module
 class _Motor:
     __current_freq: int
 
-    def __init__(self,
-                 pin_en: base_module.DigitalBoardPin,
-                 pin_m0: base_module.DigitalBoardPin,
-                 pin_m1: base_module.DigitalBoardPin,
-                 pin_m2: base_module.DigitalBoardPin,
-                 pin_dir: base_module.DigitalBoardPin,
-                 step_pwm: piopwm.PIOPWM | PWM
-                 ):
+    def __init__(
+        self,
+        pin_en: base_module.DigitalBoardPin,
+        pin_m0: base_module.DigitalBoardPin,
+        pin_m1: base_module.DigitalBoardPin,
+        pin_m2: base_module.DigitalBoardPin,
+        pin_dir: base_module.DigitalBoardPin,
+        step_pwm: piopwm.PIOPWM | PWM,
+    ):
         self.__pin_en = pin_en
         self.__pin_m0 = pin_m0
         self.__pin_m1 = pin_m1
@@ -57,8 +58,7 @@ class _Motor:
         self.__pin_m1.value(m1)
         self.__pin_m2.value(m2)
 
-    def set_direction(self, direction: bool):
-        ...
+    def set_direction(self, direction: bool): ...
 
     def accelerate_to_freq(self, freq: int, hz_per_second: int):
         freq_dif = freq - self.freq
