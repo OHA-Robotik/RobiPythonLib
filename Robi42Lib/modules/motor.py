@@ -79,6 +79,49 @@ class _Motor:
     def freq(self):
         return self.__current_freq
 
+    def accelerate(
+        self,
+        a: float,
+        from_v: float,
+        to_v: float,
+        s_limit: float = 1000,
+        wheel_radius: float = 0.032,
+    ):
+        """
+        @param a: Acceleration in m/s^2
+        @param from_v: Initial velocity in m/s
+        @param to_v: Target velocity in m/s
+        @param s_limit: Maximum distance to drive in m
+        @param wheel_radius: Wheel radius in m
+        @return: Reached velocity in m/s, distance covered in m
+        """
+        v = from_v  # m/s
+        s = 0  # m
+        dt = 0.0011  # s, TODO: Find a way to calibrate this value
+
+        if a < 0:
+            while v > to_v and s < s_limit:
+                self.set_velocity(v, wheel_radius)
+                v += dt * a
+                s += dt * v
+        else:
+            while v < to_v and s < s_limit:
+                self.set_velocity(v, wheel_radius)
+                v += dt * a
+                s += dt * v
+
+        return v, s
+
+    def set_velocity(self, v: float, wheel_radius: float = 0.032):
+        # Dieser magische ↓ Wert ergibt sich aus 1.8 / 32 * (math.pi / 180) :)
+        f = int(v / (0.00098174 * wheel_radius))
+
+        if f <= 7:
+            self.disable()
+            return
+        self.enable()
+        self.set_freq(f)
+
 
 class _MotorLeft(_Motor):
 
@@ -153,3 +196,46 @@ class Motors(base_module.BaseModule):
     def set_direction(self, direction: bool):
         self.left.set_direction(direction)
         self.right.set_direction(direction)
+
+    def accelerate(
+        self,
+        a: float,
+        from_v: float,
+        to_v: float,
+        s_limit: float = 1000,
+        wheel_radius: float = 0.032,
+    ):
+        """
+        @param a: Acceleration in m/s^2
+        @param from_v: Initial velocity in m/s
+        @param to_v: Target velocity in m/s
+        @param s_limit: Maximum distance to drive in m
+        @param wheel_radius: Wheel radius in m
+        @return: Reached velocity in m/s, distance covered in m
+        """
+        v = from_v  # m/s
+        s = 0  # m
+        dt = 0.0011  # s, TODO: Find a way to calibrate this value
+
+        if a < 0:
+            while v > to_v and s < s_limit:
+                self.set_velocity(v, wheel_radius)
+                v += dt * a
+                s += dt * v
+        else:
+            while v < to_v and s < s_limit:
+                self.set_velocity(v, wheel_radius)
+                v += dt * a
+                s += dt * v
+
+        return v, s
+
+    def set_velocity(self, v: float, wheel_radius: float = 0.032):
+        # Dieser magische ↓ Wert ergibt sich aus 1.8 / 32 * (math.pi / 180) :)
+        f = int(v / (0.00098174 * wheel_radius))
+
+        if f <= 7:
+            self.disable()
+            return
+        self.enable()
+        self.set_freq(f)
