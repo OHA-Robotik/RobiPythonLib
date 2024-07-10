@@ -110,9 +110,10 @@ class WaypointMission:
 
     def turn(
         self,
+        *,
         prev_inst_result: InstructionResult,
         turn_instruction: TurnInstruction,
-        prev_instruction_was_turn: bool,
+        prev_instruction: MissionInstruction,
     ):
         wr = self.robi_config.wheel_radius
         turn_degree_rad = turn_instruction.turn_degree * (math.pi / 180)
@@ -122,7 +123,10 @@ class WaypointMission:
         )
         inner_distance = turn_degree_rad * turn_instruction.radius
 
-        if prev_instruction_was_turn:
+        if (
+            isinstance(prev_instruction, TurnInstruction)
+            and prev_instruction.left == turn_instruction.left
+        ):
             inner_velocity = prev_inst_result.managed_velocity
             time_for_completion = inner_distance / inner_velocity
             outer_velocity = outer_distance / time_for_completion
@@ -172,6 +176,11 @@ class WaypointMission:
         # end = time.time_ns()
         # print("Actual time:", (end-start) / 1e6, "ms")
 
+        if v < 0:
+            v = 0
+        if s < 0:
+            s = 0
+
         return InstructionResult(v, s)
 
     def drive(self, prev_inst_result: InstructionResult, instruction: DriveInstruction):
@@ -186,6 +195,9 @@ class WaypointMission:
             instruction.target_velocity,
             instruction.distance,
         )
+
+        if acceleration_result.managed_velocity <= 0:
+            return InstructionResult(0, acceleration_result.covered_distance)
 
         rot = 0
         s = 0
@@ -221,13 +233,21 @@ class WaypointMission:
         )
 
     def run_instruction(
-        self, prev_inst_result: InstructionResult, instruction: MissionInstruction
+        self,
+        *,
+        prev_inst_result: InstructionResult,
+        prev_instruction: MissionInstruction,
+        instruction: MissionInstruction,
     ):
         if isinstance(instruction, DriveInstruction):
             res = self.drive(prev_inst_result, instruction)
             self.last_inst_was_turn = False
         elif isinstance(instruction, TurnInstruction):
-            res = self.turn(prev_inst_result, instruction, self.last_inst_was_turn)
+            res = self.turn(
+                prev_inst_result=prev_inst_result,
+                prev_instruction=prev_instruction,
+                turn_instruction=instruction,
+            )
             self.last_inst_was_turn = True
         else:
             raise NotImplemented()
@@ -237,8 +257,14 @@ class WaypointMission:
         self.gyro.calibrate()
 
         prev_inst_result = InstructionResult(0, 0)
+        prev_inst = DriveInstruction(0, 0, 0)
         for instruction in self.instructions:
-            prev_inst_result = self.run_instruction(prev_inst_result, instruction)
+            prev_inst_result = self.run_instruction(
+                prev_inst_result=prev_inst_result,
+                instruction=instruction,
+                prev_instruction=prev_inst,
+            )
+            prev_inst = instruction
 
         self.robi.motors.disable()
 
@@ -255,18 +281,17 @@ PATH1 = [
 ]
 
 
-def main():
-    r = Robi42()
+def main(robi: Robi42):
 
     with open("/examples/exported_waypoint_mission.json") as f:
         data = f.read()
 
     decoded = Importer.decode(data)
-    wm = WaypointMission(r, decoded[0], decoded[1])
+    wm = WaypointMission(robi, decoded[0], decoded[1])
 
     print("Start")
     wm.start()
 
 
 if __name__ == "__main__":
-    main()
+    main(Robi42())
