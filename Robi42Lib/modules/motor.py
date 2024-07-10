@@ -58,7 +58,14 @@ class _Motor:
         self.__pin_m1.value(m1)
         self.__pin_m2.value(m2)
 
-    def set_direction(self, direction: bool): ...
+    def set_direction(self, direction: bool):
+        ...
+
+    def lock(self):
+        ...
+
+    def unlock(self):
+        ...
 
     def accelerate_to_freq(self, freq: int, hz_per_second: int):
         freq_dif = freq - self.freq
@@ -138,6 +145,14 @@ class _MotorLeft(_Motor):
     def set_direction(self, direction: bool):
         self.__pin_dir.value(direction)
 
+    def lock(self):
+        self.enable()
+        self.set_freq(8)  # TODO: Find better way to lock motor
+
+    def unlock(self):
+        self.set_freq(420)
+        self.disable()
+
 
 class _MotorRight(_Motor):
 
@@ -155,6 +170,17 @@ class _MotorRight(_Motor):
 
     def set_direction(self, direction: bool):
         self.__pin_dir.value(not direction)
+
+    def set_duty_u16(self, duty_cycle: int):
+        self._step_pwm.duty_u16(duty_cycle)
+
+    def lock(self):
+        self.enable()
+        self.set_duty_u16(0)
+
+    def unlock(self):
+        self.set_duty_u16(32768)
+        self.disable()
 
 
 class Motors(base_module.BaseModule):
@@ -176,6 +202,14 @@ class Motors(base_module.BaseModule):
     def set_freq(self, freq: int):
         self.left.set_freq(freq)
         self.right.set_freq(freq)
+
+    def lock(self):
+        self.left.lock()
+        self.right.lock()
+
+    def unlock(self):
+        self.left.unlock()
+        self.right.unlock()
 
     def set_stepping_size(self, m0: bool, m1: bool, m2: bool):
         """
