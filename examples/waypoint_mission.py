@@ -25,6 +25,9 @@ class MissionInstruction:
         self.acceleration = acceleration
         self.initial_velocity = initial_velocity
 
+    def __str__(self) -> str:
+        return f"{self.acceleration=}m/s² {self.initial_velocity=}m/s"
+
 
 class DriveInstruction(MissionInstruction):
     def __init__(
@@ -40,6 +43,9 @@ class DriveInstruction(MissionInstruction):
         self.acceleration_time = acceleration_time
         self.deceleration_time = deceleration_time
         self.constant_speed_time = constant_speed_time
+
+    def __str__(self) -> str:
+        return f"Drive: {super().__str__()} {self.acceleration_time=}s {self.constant_speed_time=}s {self.deceleration_time=}s"
 
 
 class TurnInstruction(MissionInstruction):
@@ -61,6 +67,9 @@ class TurnInstruction(MissionInstruction):
         self.acceleration_degree = acceleration_degree
         self.deceleration_degree = deceleration_degree
 
+    def __str__(self) -> str:
+        return f"Turn: {super().__str__()} {self.left=} {self.total_turn_degree=}° {self.inner_radius=}m {self.acceleration_degree=}° {self.deceleration_degree=}°"
+
 
 class RapidTurnInstruction(MissionInstruction):
     def __init__(
@@ -76,6 +85,9 @@ class RapidTurnInstruction(MissionInstruction):
         self.total_turn_degree = total_turn_degree
         self.acceleration_degree = acceleration_degree
 
+    def __str__(self) -> str:
+        return f"Rapid Turn: {super().__str__()} {self.left=} {self.total_turn_degree=}° {self.acceleration_degree=}°"
+
 
 class WaypointMissionInstructionParserResult:
 
@@ -85,9 +97,8 @@ class WaypointMissionInstructionParserResult:
 
 
 class WaypointMissionInstructionParser:
-    def __init__(self): ...
-
-    def parse(self, s: str) -> WaypointMissionInstructionParserResult:
+    @staticmethod
+    def parse(s: str) -> WaypointMissionInstructionParserResult:
         obj = json.loads(s)
 
         robi_config_obj = obj["config"]
@@ -338,53 +349,55 @@ class WaypointMission:
         self.robi.gyro.calibrate_offsets(5000)
         self.robi.gyro.start()
 
+    def follow_instructions(self, instructions: list[MissionInstruction]):
+        self.robi.motors.enable()
+        for instruction in instructions:
+            if isinstance(instruction, DriveInstruction):
+                self.drive(
+                    acceleration=instruction.acceleration,
+                    initial_velocity=instruction.initial_velocity,
+                    constant_speed_time=instruction.constant_speed_time,
+                    acceleration_time=instruction.acceleration_time,
+                    deceleration_time=instruction.deceleration_time,
+                )
+            elif isinstance(instruction, TurnInstruction):
+                self.turn(
+                    acceleration=instruction.acceleration,
+                    initial_velocity=instruction.initial_velocity,
+                    inner_radius=instruction.inner_radius,
+                    deceleration_degree=instruction.deceleration_degree,
+                    acceleration_degree=instruction.acceleration_degree,
+                    total_turn_degree=instruction.total_turn_degree,
+                    left=instruction.left,
+                )
+            elif isinstance(instruction, RapidTurnInstruction):
+                self.rapid_turn(
+                    left=instruction.left,
+                    total_turn_degree=instruction.total_turn_degree,
+                    acceleration_degree=instruction.acceleration_degree,
+                    acceleration=instruction.acceleration,
+                )
+            else:
+                raise TypeError(f"Instruction {instruction} is not supported")
+            
+        self.robi.motors.disable()
+
 
 def main():
     robi = Robi42()
 
-    rc = RobiConfig(wheel_radius=0.032, track_width=0.155)
-    wm = WaypointMission(robi, rc)
+    with open("/examples/exported_waypoint_mission.json", "r") as f:
+        s = f.read()
+
+    parsed = WaypointMissionInstructionParser.parse(s)
+
+    wm = WaypointMission(robi, parsed.robi_config)
 
     print("Calibrating Gyro...", end=" ")
     wm.calibrate_gyro()
     print("Done")
 
-    robi.motors.enable()
-
-    wm.drive(
-        acceleration=0.3,
-        initial_velocity=0,
-        acceleration_time=1.7,
-        deceleration_time=0,
-        constant_speed_time=1.11,
-    )
-
-    wm.turn(
-        left=True,
-        total_turn_degree=90,
-        inner_radius=0.5,
-        acceleration=0.2,
-        initial_velocity=0.51,
-        acceleration_degree=0,
-        deceleration_degree=56.7,
-    )
-
-    wm.rapid_turn(
-        left=False,
-        total_turn_degree=180,
-        acceleration_degree=45,
-        acceleration=0.1,
-    )
-
-    wm.drive(
-        acceleration=0.6,
-        initial_velocity=0,
-        acceleration_time=1,
-        deceleration_time=1,
-        constant_speed_time=0.7,
-    )
-
-    robi.motors.disable()
+    wm.follow_instructions(parsed.instructions)
 
 
 if __name__ == "__main__":
