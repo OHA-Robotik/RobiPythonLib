@@ -303,7 +303,7 @@ class WaypointMission:
         deceleration_time: float,
     ):
 
-        max_velocity = acceleration * acceleration_time
+        max_velocity = acceleration * acceleration_time + initial_velocity
 
         self.robi.motors.set_direction(FWD)
 
@@ -324,7 +324,7 @@ class WaypointMission:
 
         timer.init(period=10, callback=timer_callback)
 
-        time.sleep(constant_speed_time - 0.1)
+        time.sleep(constant_speed_time)
 
         timer.deinit()
 
