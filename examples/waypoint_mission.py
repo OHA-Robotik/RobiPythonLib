@@ -1,7 +1,9 @@
 import time
+import json
+
+from machine import Timer
 
 from Robi42Lib.robi42 import Robi42
-from machine import Timer
 
 FWD = True
 BWD = not FWD
@@ -16,6 +18,119 @@ class RobiConfig:
     def __init__(self, wheel_radius: float, track_width: float):
         self.wheel_radius = wheel_radius
         self.track_width = track_width
+
+
+class MissionInstruction:
+    def __init__(self, *, acceleration: float, initial_velocity: float):
+        self.acceleration = acceleration
+        self.initial_velocity = initial_velocity
+
+
+class DriveInstruction(MissionInstruction):
+    def __init__(
+        self,
+        *,
+        acceleration: float,
+        initial_velocity: float,
+        acceleration_time: float,
+        deceleration_time: float,
+        constant_speed_time: float,
+    ):
+        super().__init__(acceleration=acceleration, initial_velocity=initial_velocity)
+        self.acceleration_time = acceleration_time
+        self.deceleration_time = deceleration_time
+        self.constant_speed_time = constant_speed_time
+
+
+class TurnInstruction(MissionInstruction):
+    def __init__(
+        self,
+        *,
+        acceleration: float,
+        initial_velocity: float,
+        left: bool,
+        total_turn_degree: float,
+        inner_radius: float,
+        acceleration_degree: float,
+        deceleration_degree: float,
+    ):
+        super().__init__(acceleration=acceleration, initial_velocity=initial_velocity)
+        self.left = left
+        self.total_turn_degree = total_turn_degree
+        self.inner_radius = inner_radius
+        self.acceleration_degree = acceleration_degree
+        self.deceleration_degree = deceleration_degree
+
+
+class RapidTurnInstruction(MissionInstruction):
+    def __init__(
+        self,
+        *,
+        acceleration: float,
+        left: bool,
+        total_turn_degree: float,
+        acceleration_degree: float,
+    ):
+        super().__init__(acceleration=acceleration, initial_velocity=0)
+        self.left = left
+        self.total_turn_degree = total_turn_degree
+        self.acceleration_degree = acceleration_degree
+
+
+class WaypointMissionInstructionParserResult:
+
+    def __init__(self, robi_config: RobiConfig, instructions: list[MissionInstruction]):
+        self.robi_config = robi_config
+        self.instructions = instructions
+
+
+class WaypointMissionInstructionParser:
+    def __init__(self): ...
+
+    def parse(self, s: str) -> WaypointMissionInstructionParserResult:
+        obj = json.loads(s)
+
+        robi_config_obj = obj["config"]
+        robi_config = RobiConfig(
+            wheel_radius=robi_config_obj["wheel_radius"],
+            track_width=robi_config_obj["track_width"],
+        )
+
+        instructions_obj = obj["instructions"]
+        instructions = []
+
+        for inst in instructions_obj:
+            if inst["type"] == "drive":
+                instruction = DriveInstruction(
+                    acceleration=inst["acceleration"],
+                    initial_velocity=inst["initial_velocity"],
+                    acceleration_time=inst["acceleration_time"],
+                    deceleration_time=inst["deceleration_time"],
+                    constant_speed_time=inst["constant_speed_time"],
+                )
+            elif inst["type"] == "turn":
+                instruction = TurnInstruction(
+                    acceleration=inst["acceleration"],
+                    initial_velocity=inst["initial_velocity"],
+                    left=inst["left"],
+                    total_turn_degree=inst["total_turn_degree"],
+                    acceleration_degree=inst["acceleration_degree"],
+                    deceleration_degree=inst["deceleration_degree"],
+                    inner_radius=inst["inner_radius"],
+                )
+            elif inst["type"] == "rapid_turn":
+                instruction = RapidTurnInstruction(
+                    acceleration=inst["acceleration"],
+                    left=inst["left"],
+                    total_turn_degree=inst["total_turn_degree"],
+                    acceleration_degree=inst["acceleration_degree"],
+                )
+            else:
+                raise ValueError(f"Unrecognized instruction type: {inst['type']}")
+
+            instructions.append(instruction)
+
+        return WaypointMissionInstructionParserResult(robi_config, instructions)
 
 
 class WaypointMission:
