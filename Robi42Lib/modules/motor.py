@@ -8,7 +8,6 @@ from . import base_module
 
 
 class _Motor:
-    __current_freq: int
 
     def __init__(
         self,
@@ -25,6 +24,8 @@ class _Motor:
         self.__pin_m2 = pin_m2
         self.__pin_dir = pin_dir
         self._step_pwm = step_pwm
+        self.__current_freq = 420
+        self._current_direction = Motors.DIR_FORWARD
 
         self.disable()
         self.set_freq(420)
@@ -58,14 +59,11 @@ class _Motor:
         self.__pin_m1.value(m1)
         self.__pin_m2.value(m2)
 
-    def set_direction(self, direction: bool):
-        ...
+    def set_direction(self, direction: bool): ...
 
-    def lock(self):
-        ...
+    def lock(self): ...
 
-    def unlock(self):
-        ...
+    def unlock(self): ...
 
     def accelerate_to_freq(self, freq: int, hz_per_second: int):
         freq_dif = freq - self.freq
@@ -85,6 +83,10 @@ class _Motor:
     @property
     def freq(self):
         return self.__current_freq
+
+    @property
+    def direction(self):
+        return self._current_direction
 
     def accelerate(
         self,
@@ -143,6 +145,7 @@ class _MotorLeft(_Motor):
         )
 
     def set_direction(self, direction: bool):
+        self._current_direction = direction
         self.__pin_dir.value(direction)
 
     def lock(self):
@@ -169,6 +172,7 @@ class _MotorRight(_Motor):
         )
 
     def set_direction(self, direction: bool):
+        self._current_direction = direction
         self.__pin_dir.value(not direction)
 
     def set_duty_u16(self, duty_cycle: int):
