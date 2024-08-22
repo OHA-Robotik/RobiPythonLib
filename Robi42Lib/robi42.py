@@ -14,9 +14,9 @@ from .modules import laser_sensor as _mod_laser_sensor
 class Robi42:
 
     def __init__(self,):
+        self.motors = _mod_motor.Motors()
         self.buttons = _mod_buttons.Buttons()
         self.piezo = _mod_piezo.Piezo()
-        self.motors = _mod_motor.Motors()
         self.poti = _mod_poti.Poti()
         self.leds = _mod_led.Leds()
         self.ir_sensors = _mod_ir_sensor.IrSensors()
