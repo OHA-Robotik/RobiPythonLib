@@ -1,5 +1,6 @@
 import time
 import json
+import deflate
 
 from machine import Timer
 
@@ -89,59 +90,52 @@ class RapidTurnInstruction(MissionInstruction):
         return f"Rapid Turn: {super().__str__()} {self.left=} {self.total_turn_degree=}° {self.acceleration_degree=}°"
 
 
-class WaypointMissionInstructionParserResult:
-
-    def __init__(self, robi_config: RobiConfig, instructions: list[MissionInstruction]):
-        self.robi_config = robi_config
-        self.instructions = instructions
-
-
 class WaypointMissionInstructionParser:
+
     @staticmethod
-    def parse(s: str) -> WaypointMissionInstructionParserResult:
-        obj = json.loads(s)
+    def parse_from_file(file_path: str) -> list[MissionInstruction]:
+        with open(file_path, "rb") as f:
+            with deflate.DeflateIO(f, deflate.GZIP, 8) as f:
+                obj = json.load(f)
+        return WaypointMissionInstructionParser.parse_from_json(obj)
 
-        robi_config_obj = obj["config"]
-        robi_config = RobiConfig(
-            wheel_radius=robi_config_obj["wheel_radius"],
-            track_width=robi_config_obj["track_width"],
-        )
-
-        instructions_obj = obj["instructions"]
+    @staticmethod
+    def parse_from_json(obj: list) -> list[MissionInstruction]:
         instructions = []
 
-        for inst in instructions_obj:
-            if inst["type"] == "drive":
+        for inst in obj:
+            ty = inst["ty"]
+            if ty == "d":
                 instruction = DriveInstruction(
-                    acceleration=inst["acceleration"],
-                    initial_velocity=inst["initial_velocity"],
-                    acceleration_time=inst["acceleration_time"],
-                    deceleration_time=inst["deceleration_time"],
-                    constant_speed_time=inst["constant_speed_time"],
+                    acceleration=inst["a"],
+                    initial_velocity=inst["vi"],
+                    acceleration_time=inst["ta"],
+                    deceleration_time=inst["td"],
+                    constant_speed_time=inst["tc"],
                 )
-            elif inst["type"] == "turn":
+            elif ty == "t":
                 instruction = TurnInstruction(
-                    acceleration=inst["acceleration"],
-                    initial_velocity=inst["initial_velocity"],
-                    left=inst["left"],
-                    total_turn_degree=inst["total_turn_degree"],
-                    acceleration_degree=inst["acceleration_degree"],
-                    deceleration_degree=inst["deceleration_degree"],
-                    inner_radius=inst["inner_radius"],
+                    acceleration=inst["a"],
+                    initial_velocity=inst["vi"],
+                    left=inst["l"],
+                    total_turn_degree=inst["dt"],
+                    acceleration_degree=inst["da"],
+                    deceleration_degree=inst["dd"],
+                    inner_radius=inst["ri"],
                 )
-            elif inst["type"] == "rapid_turn":
+            elif ty == "rt":
                 instruction = RapidTurnInstruction(
-                    acceleration=inst["acceleration"],
-                    left=inst["left"],
-                    total_turn_degree=inst["total_turn_degree"],
-                    acceleration_degree=inst["acceleration_degree"],
+                    acceleration=inst["a"],
+                    left=inst["l"],
+                    total_turn_degree=inst["dt"],
+                    acceleration_degree=inst["da"],
                 )
             else:
-                raise ValueError(f"Unrecognized instruction type: {inst['type']}")
+                raise ValueError(f"Unrecognized instruction type: {ty}")
 
             instructions.append(instruction)
 
-        return WaypointMissionInstructionParserResult(robi_config, instructions)
+        return instructions
 
 
 class WaypointMission:
@@ -385,19 +379,17 @@ class WaypointMission:
 
 def main():
     robi = Robi42()
+    robi_config = RobiConfig(wheel_radius=0.032, track_width=14.5)
 
-    with open("/examples/exported_waypoint_mission.json", "r") as f:
-        s = f.read()
+    parsed = WaypointMissionInstructionParser.parse_from_file("/examples/exported_waypoint_mission.json.gz")
 
-    parsed = WaypointMissionInstructionParser.parse(s)
-
-    wm = WaypointMission(robi, parsed.robi_config)
+    wm = WaypointMission(robi, robi_config)
 
     print("Calibrating Gyro...", end=" ")
     wm.calibrate_gyro()
     print("Done")
 
-    wm.follow_instructions(parsed.instructions)
+    wm.follow_instructions(parsed)
 
 
 if __name__ == "__main__":
