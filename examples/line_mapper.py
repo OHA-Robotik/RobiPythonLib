@@ -10,6 +10,10 @@ FWD = True
 BWD = not FWD
 
 
+# Binary file structure documentation:
+# https://github.com/Finnomator/robi_line_drawer/wiki/IR-Read-Result-Binary-File-Definition
+
+
 def encode_data(
     freq_left: int,
     freq_right: int,
@@ -163,10 +167,10 @@ class BluetoothLineMapper(LineMapper):
     async def peripheral_task(self):
         while self.is_running:
             async with await aioble.advertise(
-                    self._ADV_INTERVAL_MS,
-                    name="mpy-robot",  # Update to reflect your robot's name
-                    services=[self._SENSOR_SERVICE_UUID],
-                    appearance=self._ADV_APPEARANCE_GENERIC_ROBOT,
+                self._ADV_INTERVAL_MS,
+                name="Robi 42",
+                services=[self._SENSOR_SERVICE_UUID],
+                appearance=self._ADV_APPEARANCE_GENERIC_ROBOT,
             ) as connection:
                 print("Connection from", connection.device)
                 self.bt_connected = True
@@ -197,7 +201,7 @@ class BluetoothLineMapper(LineMapper):
         while self.is_running and self.bt_connected:
             if not self.robi.buttons.center.value():
                 break
-            await asyncio.sleep(0.1)  # Use async sleep to allow the event loop to run other tasks
+            await asyncio.sleep(0.1)
 
         self.is_running = False
 
