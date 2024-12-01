@@ -5,6 +5,7 @@ import bluetooth
 
 from Robi42Lib.robi42 import Robi42
 from machine import Timer
+from micropython import const
 
 FWD = True
 BWD = not FWD
@@ -37,9 +38,15 @@ def encode_data(
 
 
 class LineMapper:
-    def __init__(self, robi: Robi42, resolution: float = 0.1):
+
+    file_type_version = const(1)
+    version_byte_len = const(2)
+    resolution_byte_len = const(2)
+
+    def __init__(self, robi: Robi42, resolution: float = 0.1, file_name: str = "ir_read.bin"):
         self.robi = robi
         self.resolution = resolution
+        self.file_name = file_name
         self.is_running = False
         self.threshold = 200
 
@@ -93,17 +100,21 @@ class LineMapper:
 
     def start(self):
 
-        with open("ir_read.bin", "wb") as f:
-            resolution_byte = int(self.resolution * 1000).to_bytes(2, "big")
+        with open(self.file_name, "wb") as f:
+            version_byte = self.file_type_version.to_bytes(self.version_byte_len, "big")
+            resolution_byte = int(self.resolution * 1000).to_bytes(self.resolution_byte_len, "big")
+
+            f.write(version_byte)
             f.write(resolution_byte)
 
-        self.f = open("ir_read.bin", "ab")
+        self.f = open(self.file_name, "ab")
 
         timer = Timer(-1)
         step_timer = Timer(-1)
         tick = int(self.resolution * 1000)
         self.is_running = True
 
+        self.robi.motors.set_direction(FWD)
         self.robi.motors.enable()
 
         step_timer.init(period=tick, callback=self.step)
@@ -215,7 +226,7 @@ class BluetoothLineMapper(LineMapper):
 
 def main():
     r = Robi42()
-    lm = BluetoothLineMapper(r)
+    lm = LineMapper(r)
     lm.start()
 
 
