@@ -10,7 +10,9 @@ import time
 
 class Bluetooth:
 
-    def __init__(self, services: list[aioble.Service], advertising_name: str = "Robi 42"):
+    def __init__(
+        self, services: list[aioble.Service], advertising_name: str = "Robi 42"
+    ):
 
         self.services = services
         self.advertising_name = advertising_name
@@ -24,42 +26,22 @@ class Bluetooth:
         for service in services:
             aioble.register_services(service)
 
-        self._bt_connected = False
-        self._run_advertising = False
-
-    def start_advertising(self):
-        self._run_advertising = True
-        asyncio.create_task(self._advertise())
-
-    def stop_advertising(self):
         self._run_advertising = False
 
     @staticmethod
-    def write_data_to_characteristic(characteristic: aioble.Characteristic, data: bytes):
-        characteristic.write(data, send_update=True)
+    def write_data_to_characteristic(
+        characteristic: aioble.Characteristic, data: bytes, send_update: bool = True
+    ):
+        characteristic.write(data, send_update=send_update)
 
-    async def _advertise(self):
-        while self._run_advertising:
-            print("Waiting for connection")
-            async with await aioble.advertise(
-                self._ADV_INTERVAL_MS,
-                name=self.advertising_name,
-                services=[service.uuid for service in self.services],
-                appearance=self._ADV_APPEARANCE_GENERIC_ROBOT,
-            ) as connection:
-                print("Connection from", connection.device)
-                self._bt_connected = True
-                await connection.disconnected(timeout_ms=None)
-                self._bt_connected = False
-                print("Lost bluetooth connection")
-
-    async def wait_for_connection(self):
-        while not self._bt_connected:
-            await asyncio.sleep(0.1)
-
-    @property
-    def is_connected(self):
-        return self._bt_connected
+    async def advertise_and_wait_for_connection(self):
+        connection = await aioble.advertise(
+            self._ADV_INTERVAL_MS,
+            name=self.advertising_name,
+            services=[service.uuid for service in self.services],
+            appearance=self._ADV_APPEARANCE_GENERIC_ROBOT,
+        )
+        return connection
 
 
 async def _example():
