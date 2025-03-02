@@ -27,17 +27,17 @@ class EnabledFeatureSetFrameData(abstract.AbstractFrameData):
     def __init__(
         self,
         *,
-        enable_voltages: bool = False,
-        enable_motor_states: bool = False,
-        enable_gyroscope_state: bool = False,
-        enable_accelerometer_state: bool = False,
-        enable_laser_sensor_state: bool = False,
-        enable_infrared_sensors_state: bool = False,
-        enable_poti_state: bool = False,
-        enable_button_states: bool = False,
-        enable_led_states: bool = False,
-        enable_piezo_state: bool = False,
-        enable_lcd_state: bool = False
+        enable_voltages: bool,
+        enable_motor_states: bool,
+        enable_gyroscope_state: bool,
+        enable_accelerometer_state: bool,
+        enable_laser_sensor_state: bool,
+        enable_infrared_sensors_state: bool,
+        enable_poti_state: bool,
+        enable_button_states: bool,
+        enable_led_states: bool,
+        enable_piezo_state: bool,
+        enable_lcd_state: bool
     ):
         self.enable_voltages = enable_voltages
         self.enable_motor_states = enable_motor_states

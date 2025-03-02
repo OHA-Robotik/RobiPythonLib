@@ -1,13 +1,21 @@
 from time import sleep_ms
-
+from math import pi
 from machine import Pin, PWM
 
 from ..abstract import piopwm
 
 from . import base_module
 
+ANGLE_PER_FULL_STEP = (1.8 * (pi / 180))
+ANGULAR_VELOCITY_TO_RPM = 60 / (2 * pi)
 
 class _Motor:
+
+    __m0: bool
+    __m1: bool
+    __m2: bool
+
+    __enabled: bool
 
     def __init__(
         self,
@@ -33,9 +41,11 @@ class _Motor:
         self.set_direction(Motors.DIR_FORWARD)
 
     def enable(self):
+        self.__enabled = True
         self.__pin_en.off()
 
     def disable(self):
+        self.__enabled = False
         self.__pin_en.on()
 
     def set_freq(self, freq: int):
@@ -55,9 +65,37 @@ class _Motor:
         |0|1|1|32 microsteps/step|
         |1|1|1|32 microsteps/step|
         """
+        self.__m0 = m0
+        self.__m1 = m1
+        self.__m2 = m2
         self.__pin_m0.value(m0)
         self.__pin_m1.value(m1)
         self.__pin_m2.value(m2)
+
+    @property
+    def micro_steps_per_step(self):
+        m0 = self.__m0
+        m1 = self.__m1
+        m2 = self.__m2
+
+        if not m0 and not m1 and not m2:
+            return 1
+        if m0 and not m1 and not m2:
+            return 2
+        if not m0 and m1 and not m2:
+            return 4
+        if m0 and m1 and not m2:
+            return 8
+        if not m0 and not m1 and m2:
+            return 16
+        if m0 and not m1 and m2:
+            return 32
+        if not m0 and m1 and m2:
+            return 32
+        if m0 and m1 and m2:
+            return 32
+
+        raise ValueError("Invalid stepping size")
 
     def set_direction(self, direction: bool): ...
 
@@ -121,16 +159,39 @@ class _Motor:
 
         return v, s
 
-    def set_velocity(self, v: float, wheel_radius: float = 0.032):
-        # Dieser magische ↓ Wert ergibt sich aus 1.8 / 32 * (math.pi / 180) :)
-        f = int(v / (0.00098174 * wheel_radius))
-
+    def set_angular_velocity(self, av: float):
+        """
+        av: Angular velocity in rad/s
+        """
+        f = int(av * self.micro_steps_per_step / ANGLE_PER_FULL_STEP)
         if f <= 7:
             self.disable()
             return
         self.enable()
         self.set_freq(f)
 
+    def set_velocity(self, v: float, wheel_radius: float = 0.032):
+        """
+        v: Linear velocity in m/s
+        wheel_radius: Wheel radius in m
+        """
+        self.set_angular_velocity(v / wheel_radius)
+
+    @property
+    def angular_velocity(self) -> float:
+        """
+        Angular velocity in rad/s
+        Positive values indicate forward rotation
+        Negative values indicate backward rotation
+        """
+        if not self.__enabled:
+            return 0
+        sign = 1 if self.direction == Motors.DIR_FORWARD else -1
+        return self.freq * ANGLE_PER_FULL_STEP / self.micro_steps_per_step * sign
+
+    @property
+    def rpm(self) -> float:
+        return self.angular_velocity * ANGULAR_VELOCITY_TO_RPM
 
 class _MotorLeft(_Motor):
 
@@ -268,12 +329,17 @@ class Motors(base_module.BaseModule):
 
         return v, s
 
-    def set_velocity(self, v: float, wheel_radius: float = 0.032):
-        # Dieser magische ↓ Wert ergibt sich aus 1.8 / 32 * (math.pi / 180) :)
-        f = int(v / (0.00098174 * wheel_radius))
+    def set_angular_velocity(self, av: float):
+        """
+        av: Angular velocity in rad/s
+        """
+        self.left.set_angular_velocity(av)
+        self.right.set_angular_velocity(av)
 
-        if f <= 7:
-            self.disable()
-            return
-        self.enable()
-        self.set_freq(f)
+    def set_velocity(self, v: float, wheel_radius: float = 0.032):
+        """
+        v: Linear velocity in m/s
+        wheel_radius: Wheel radius in m
+        """
+        self.left.set_velocity(v, wheel_radius)
+        self.right.set_velocity(v, wheel_radius)

@@ -1,3 +1,4 @@
+from .... import robi42
 from . import abstract
 from .. import utils
 
@@ -41,3 +42,13 @@ class ButtonsFrameData(abstract.AbstractFrameData):
     @property
     def bytes(self) -> bytes:
         return self.buttons_byte
+
+    @staticmethod
+    def sample(robi: robi42.Robi42) -> "ButtonsFrameData":
+        return ButtonsFrameData(
+            left_button_is_pressed=robi.buttons.left.value() == 0,
+            right_button_is_pressed=robi.buttons.right.value() == 0,
+            center_button_is_pressed=robi.buttons.center.value() == 0,
+            up_button_is_pressed=robi.buttons.up.value() == 0,
+            down_button_is_pressed=robi.buttons.down.value() == 0,
+       )

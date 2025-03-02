@@ -1,5 +1,6 @@
 from . import abstract
 from .. import utils
+from .... import robi42
 
 class PotiFrameData(abstract.AbstractFrameData):
 
@@ -12,3 +13,7 @@ class PotiFrameData(abstract.AbstractFrameData):
     @property
     def bytes(self) -> bytes:
         return self.value_bytes
+
+    @staticmethod
+    def sample(robi: robi42.Robi42) -> "PotiFrameData":
+        return PotiFrameData(value=int(robi.poti.get_value() * PotiFrameData.MAX_VALUE))

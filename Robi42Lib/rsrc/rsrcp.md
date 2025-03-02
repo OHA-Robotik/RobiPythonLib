@@ -82,7 +82,25 @@ the frame.
 
 #### Motor States
 
-[Yet to be defined]
+The state of a single motor is communicated as a 16-bit signed fixed-point number.  
+Minimum value: -300.0  
+Maximum value: 300.0  
+The value represents the speed of the motor in rad/s. Negative values represent reverse rotation.  
+First comes the left motor and then the right motor.
+
+```python
+import struct
+
+def encode_fixed_point(value):
+    if not -300 <= value <= 300:
+        raise ValueError("Value out of range!")
+    fixed_value = int(value * 100)  # Scale and convert to integer
+    return struct.pack('>h', fixed_value)  # Store as 2 bytes (big-endian signed short)
+
+def decode_fixed_point(byte_data):
+    fixed_value = struct.unpack('>h', byte_data)[0]  # Retrieve 2-byte signed int
+    return fixed_value / 100  # Convert back to float
+```
 
 #### Gyroscope State
 
