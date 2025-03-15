@@ -1,19 +1,24 @@
-from time import sleep as _sleep
-
 from .modules import buttons as _mod_buttons
-from .modules import piezo as _mod_piezo
-from .modules import motor as _mod_motor
-from .modules import poti as _mod_poti
-from .modules import led as _mod_led
-from .modules import ir_sensor as _mod_ir_sensor
-from .modules import lcd as _mod_lcd
 from .modules import gyro as _mod_gyro
+from .modules import ir_sensor as _mod_ir_sensor
 from .modules import laser_sensor as _mod_laser_sensor
+from .modules import lcd as _mod_lcd
+from .modules import led as _mod_led
+from .modules import motor as _mod_motor
+from .modules import piezo as _mod_piezo
+from .modules import poti as _mod_poti
 
 
 class Robi42:
+    """
+    Robi42 is the main class that provides access to all hardware components
+    such as motors, buttons, piezo, LEDs, and sensors.
+    """
 
-    def __init__(self,):
+    def __init__(self):
+        """
+        Initializes all the hardware modules of Robi42.
+        """
         self.motors = _mod_motor.Motors()
         self.buttons = _mod_buttons.Buttons()
         self.piezo = _mod_piezo.Piezo()
