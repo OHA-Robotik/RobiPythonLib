@@ -3,3 +3,4 @@
 /.idea/
 .picowgo
 /temp/
+**/__pycache__/
