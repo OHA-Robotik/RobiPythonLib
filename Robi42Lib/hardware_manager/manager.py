@@ -4,6 +4,7 @@ from machine import Timer
 
 from . import platform_description
 from ..device_drivers import inventory as driver_inventory
+from ..device_drivers.impl import vl53l0x
 
 
 class HardwareManager():
@@ -40,18 +41,29 @@ class HardwareManager():
                     # hardware is already initialized, nothing to do here
                     continue
                 # look for a matching driver
-                selected_driver = None
                 for driver in driver_inventory.I2C_DRIVERS:
                     if address in driver.SUPPORTED_ADDRESSES:
                         selected_driver = driver
+
+                        print('Instantiating', selected_driver.__name__ + '... ', end='')
+
+                        try:
+                            driver_obj = selected_driver(i2c_phy, address)
+                        except vl53l0x.TimeoutError:
+                            print('Failed')
+                            continue
+
+                        currently_loaded_drivers[address] = driver_obj
+
+                        if selected_driver.__name__ not in self.i2c_drivers_by_name:
+                            self.i2c_drivers_by_name[selected_driver.__name__] = []
+
+                        self.i2c_drivers_by_name[selected_driver.__name__].append(driver_obj)
+
+                        print('Success')
+
                         break
-                if selected_driver is not None:
-                    print('Instanciate', selected_driver.__name__)
-                    driver_obj = selected_driver(i2c_phy, address)
-                    currently_loaded_drivers[address] = driver_obj
-                    if selected_driver.__name__ not in self.i2c_drivers_by_name:
-                        self.i2c_drivers_by_name[selected_driver.__name__] = []
-                    self.i2c_drivers_by_name[selected_driver.__name__].append(driver_obj)
+
             # destruct drivers of hardware that has been removed
             addresses_to_destruct = set(currently_loaded_drivers.keys()) - set(devices)
             for address in addresses_to_destruct:
