@@ -21,21 +21,6 @@ def needs_i2c_hardware(driver_name):
     return function_wrapper
 
 
-def get_first_i2c_hardware_any(*driver_classes):
-    def wrapper(func):
-        manager = hw_manager.HardwareManager.get_instance()
-
-        def inner_wrap(*args, **kwargs):
-            for driver_class in driver_classes:
-                drivers = manager.get_i2c_driver_by_name(driver_class.__name__)
-                if drivers:
-                    return func(*args, **kwargs, device=drivers[0])
-            raise RuntimeError(f"No supported I2C hardware found for {[cls.__name__ for cls in driver_classes]}.")
-
-        return inner_wrap
-    return wrapper
-
-
 def get_first_i2c_hardware(driver_name, ignore_if_not_present=True):
     def function_wrapper(func):
         manager_instance = hw_manager.HardwareManager.get_instance()
