@@ -1,19 +1,16 @@
 from time import sleep_ms
 
 from . import base_module
-from ..device_drivers.impl import vl53l0x as vl53l0x_driver
+from ..device_drivers.impl import vl53lxx as vl53lxx_driver
 
 
 class LaserSensor(base_module.BaseModule):
 
-    @base_module.get_first_i2c_hardware('VL53L0X')
-    def read_distance_mm(self, VL53L0X: vl53l0x_driver.VL53L0X | None=None):
+    @base_module.get_first_i2c_hardware('VL53LXX')
+    def read_distance_mm(self, VL53LXX: vl53lxx_driver.VL53LXX | None=None) -> int:
         """
         Returns the distance in mm.
         Takes 20ms for cooldown.
-
-        60 = random gemessen mit der Hand davor gehalten
         """
         sleep_ms(20)
-        distance: int = VL53L0X.ping()
-        return abs(distance - 60)
+        return VL53LXX.measure_distance()
