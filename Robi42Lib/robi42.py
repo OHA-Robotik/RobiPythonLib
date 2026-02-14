@@ -37,9 +37,7 @@ class Robi42:
         self.lcd.begin()
 
         if self.external_storage.is_connected():
-            print("EEPROM is connected")
             hw_revision = self.external_storage.read_hw_revision()
             self.motors.begin(True)
         else:
-            print("EEPROM not connected")
             self.motors.begin(False)
