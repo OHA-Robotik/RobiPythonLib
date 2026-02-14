@@ -49,6 +49,10 @@ class EEPROM(base_module.BaseModule):
                     EEPROM_24LC256_I2C_driver: eeprom_i2c.EEPROM_24LC256_I2C_driver = None):
         self._write_bytes_impl(start_addr, data, EEPROM_24LC256_I2C_driver)
 
+    @base_module.get_first_i2c_hardware('EEPROM_24LC256_I2C_driver')
+    def is_connected(self, EEPROM_24LC256_I2C_driver: eeprom_i2c.EEPROM_24LC256_I2C_driver = None):
+        return EEPROM_24LC256_I2C_driver is not None
+
     # --- Data Type Helpers ---
 
     def write_str(self, start_addr: int, string: str, encoding: str = 'utf-8'):
@@ -174,6 +178,9 @@ class ExternalStorage(base_module.BaseModule):
     def __init__(self):
         self._system_partition = Partition(self._SYSTEM_RESERVED_START_ADDR, self._SYSTEM_RESERVED_SPACE)
         self._user_partition = Partition.from_end_addr(self._system_partition.end_addr, self._TOTAL_SIZE)
+
+    def is_connected(self) -> bool:
+        return self._system_partition.is_connected()
 
     # -- System Accessors --
 

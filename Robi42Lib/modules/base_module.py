@@ -39,6 +39,4 @@ def get_first_i2c_hardware(driver_name, ignore_if_not_present=True):
 
 
 class BaseModule:
-
-    def begin(self):
-        ...
+    ...
