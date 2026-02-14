@@ -21,10 +21,11 @@ class Bluetooth:
         # If the environment has multiple devices, slightly randomizing the ADV_INTERVAL_MS can reduce advertisement collisions
         self._ADV_INTERVAL_MS = 250_000 + random.randint(0, 50_000)
 
-        aioble.register_services(*self.services)
-
         self._bt_connected = False
         self._run_advertising = False
+
+    def begin(self):
+        aioble.register_services(*self.services)
 
     def start_advertising(self):
         self._run_advertising = True

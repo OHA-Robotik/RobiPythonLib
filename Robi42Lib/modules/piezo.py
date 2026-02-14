@@ -11,6 +11,8 @@ from . import base_module
 class Piezo(base_module.BaseModule):
     def __init__(self):
         self.piezo = PWM(Pin(22, Pin.OUT))
+
+    def begin(self):
         self.piezo.freq(440)
         self.mute()
 

@@ -8,6 +8,7 @@ from .modules import motor as _mod_motor
 from .modules import piezo as _mod_piezo
 from .modules import poti as _mod_poti
 from .modules import eeprom as _mod_eeprom
+from .modules import base_module as _base_mod
 
 class Robi42:
     """
@@ -29,3 +30,20 @@ class Robi42:
         self.laser_sensor = _mod_laser_sensor.LaserSensor()
         self.gyro = _mod_gyro.Gyro()
         self.external_storage = _mod_eeprom.ExternalStorage()
+
+        self._modules: list[_base_mod.BaseModule] = [
+            self.motors,
+            self.buttons,
+            self.piezo,
+            self.poti,
+            self.leds,
+            self.ir_sensors,
+            self.lcd,
+            self.laser_sensor,
+            self.gyro,
+            self.external_storage
+        ]
+
+    def begin(self):
+        for mod in self._modules:
+            mod.begin()

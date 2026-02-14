@@ -94,4 +94,5 @@ class Leds(base_module.BaseModule):
             ]
         )
 
+    def begin(self):
         self.all.off()

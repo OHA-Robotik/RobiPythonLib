@@ -27,6 +27,7 @@ class _Motor:
         self.__current_freq = 420
         self._current_direction = Motors.DIR_FORWARD
 
+    def begin(self):
         self.disable()
         self.set_freq(420)
         self.set_stepping_size(True, True, True)
@@ -160,16 +161,18 @@ class _MotorLeft(_Motor):
 class _MotorRight(_Motor):
 
     def __init__(self) -> None:
-        step_pwm = PWM(Pin(21, Pin.OUT))
-        step_pwm.duty_u16(32768)
+        self.step_pwm = PWM(Pin(21, Pin.OUT))
         super().__init__(
             pin_en=base_module.DigitalBoardPin(base_module.DigitalBoardPins.mr_en),
             pin_m0=base_module.DigitalBoardPin(base_module.DigitalBoardPins.mr_m0),
             pin_m1=base_module.DigitalBoardPin(base_module.DigitalBoardPins.mr_m1),
             pin_m2=base_module.DigitalBoardPin(base_module.DigitalBoardPins.mr_m2),
             pin_dir=base_module.DigitalBoardPin(base_module.DigitalBoardPins.mr_dir),
-            step_pwm=step_pwm,
+            step_pwm=self.step_pwm,
         )
+
+    def begin(self):
+        self.step_pwm.duty_u16(32768)
 
     def set_direction(self, direction: bool):
         self._current_direction = direction
@@ -194,6 +197,10 @@ class Motors(base_module.BaseModule):
     def __init__(self) -> None:
         self.left = _MotorLeft()
         self.right = _MotorRight()
+
+    def begin(self):
+        self.left.begin()
+        self.right.begin()
 
     def disable(self):
         self.left.disable()
@@ -236,12 +243,12 @@ class Motors(base_module.BaseModule):
         self.right.set_direction(direction)
 
     def accelerate(
-        self,
-        a: float,
-        from_v: float,
-        to_v: float,
-        s_limit: float = 1000,
-        wheel_radius: float = 0.032,
+            self,
+            a: float,
+            from_v: float,
+            to_v: float,
+            s_limit: float = 1000,
+            wheel_radius: float = 0.032,
     ):
         """
         @param a: Acceleration in m/s^2
