@@ -7,7 +7,7 @@ from .modules import led as _mod_led
 from .modules import motor as _mod_motor
 from .modules import piezo as _mod_piezo
 from .modules import poti as _mod_poti
-
+from .modules import eeprom as _mod_eeprom
 
 class Robi42:
     """
@@ -28,3 +28,4 @@ class Robi42:
         self.lcd = _mod_lcd.LCD()
         self.laser_sensor = _mod_laser_sensor.LaserSensor()
         self.gyro = _mod_gyro.Gyro()
+        self.external_storage = _mod_eeprom.ExternalStorage()

@@ -24,6 +24,11 @@ class PlatformLoader():
                 'num_lines': 2,
                 'num_columns': 16
             },
+            '24lc256_i2c' : {
+                'verbose': True,
+                'block_size': 9,
+                'page_size': 64, # Can be None, 16, 32, 64, 128, 256. None will measure the pagesize (undesirable)
+            }
         }
 
     def __init_board_pins(self):
