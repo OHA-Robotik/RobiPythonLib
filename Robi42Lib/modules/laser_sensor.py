@@ -1,20 +1,16 @@
 from time import sleep_ms
 
 from . import base_module
-from ..device_drivers.impl import vl53l0x as vl53l0x_driver
-from ..device_drivers.impl import vl53l1x as vl53l1x_driver
+from ..device_drivers.impl import vl53lxx as vl53lxx_driver
+
 
 class LaserSensor(base_module.BaseModule):
 
-    @base_module.get_first_i2c_hardware_any(vl53l0x_driver.VL53L0X, vl53l1x_driver.VL53L1X)
-    def read_distance_mm(self, device=None):
+    @base_module.get_first_i2c_hardware('VL53LXX')
+    def read_distance_mm(self, VL53LXX: vl53lxx_driver.VL53LXX | None=None) -> int:
+        """
+        Returns the distance in mm.
+        Takes 20ms for cooldown.
+        """
         sleep_ms(20)
-        if isinstance(device, vl53l0x_driver.VL53L0X):
-            distance = abs(device.ping() - 60)
-        elif isinstance(device, vl53l1x_driver.VL53L1X):
-            distance = device.read()
-        else:
-            raise TypeError("Unsupported device type.")
-        
-        return distance
-    
+        return VL53LXX.measure_distance()
