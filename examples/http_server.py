@@ -4,7 +4,7 @@ import _thread
 
 
 class HttpServer:
-    def __init__(self, ssid, pswd):
+    def __init__(self, ssid: str, pswd: str):
 
         self.request_response = {"": "Default interface"}
 
@@ -55,6 +55,6 @@ class HttpServer:
 
 
 if __name__ == "__main__":
-    h = HttpServer("Sasnas", "Carl1234")
+    h = HttpServer("Robi 42", "12345678")
     h.start_serving()
     h.edit_response_html("hello", "HELLO")
