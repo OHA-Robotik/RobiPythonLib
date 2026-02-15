@@ -48,3 +48,27 @@ class LCD(base_module.BaseModule):
     @base_module.get_first_i2c_hardware('HD44780_I2C_driver')
     def put_str(self, text: str, HD44780_I2C_driver=None):
         HD44780_I2C_driver.putstr(text)
+
+    @base_module.get_first_i2c_hardware('HD44780_I2C_driver')
+    def clear(self, HD44780_I2C_driver=None):
+        HD44780_I2C_driver.clear()
+
+    @base_module.get_first_i2c_hardware('HD44780_I2C_driver')
+    def show_cursor(self, HD44780_I2C_driver=None):
+        HD44780_I2C_driver.show_cursor()
+
+    @base_module.get_first_i2c_hardware('HD44780_I2C_driver')
+    def hide_cursor(self, HD44780_I2C_driver=None):
+        HD44780_I2C_driver.hide_cursor()
+
+    @base_module.get_first_i2c_hardware('HD44780_I2C_driver')
+    def blink_cursor_on(self, HD44780_I2C_driver=None):
+        HD44780_I2C_driver.blink_cursor_on()
+
+    @base_module.get_first_i2c_hardware('HD44780_I2C_driver')
+    def blink_cursor_off(self, HD44780_I2C_driver=None):
+        HD44780_I2C_driver.blink_cursor_off()
+
+    @base_module.get_first_i2c_hardware('HD44780_I2C_driver')
+    def move_to(self, cursor_x, cursor_y, HD44780_I2C_driver=None):
+        HD44780_I2C_driver.move_to(cursor_x, cursor_y)
