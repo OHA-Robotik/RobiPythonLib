@@ -7,10 +7,16 @@ from ..abstract import piopwm
 from . import base_module
 
 
+class MotorSide:
+    LEFT = 0
+    RIGHT = 1
+
+
 class _Motor:
 
     def __init__(
             self,
+            side: int,
             pin_en: base_module.DigitalBoardPin,
             pin_m0: base_module.DigitalBoardPin,
             pin_m1: base_module.DigitalBoardPin,
@@ -18,6 +24,7 @@ class _Motor:
             pin_dir: base_module.DigitalBoardPin,
             step_pwm: piopwm.PIOPWM | PWM,
     ):
+        self._side = side
         self.__pin_en = pin_en
         self.__pin_m0 = pin_m0
         self.__pin_m1 = pin_m1
@@ -26,6 +33,10 @@ class _Motor:
         self._step_pwm = step_pwm
         self.__current_freq = 420
         self._current_direction = Motors.DIR_FORWARD
+
+    @property
+    def side(self):
+        return self._side
 
     def begin(self):
         self.disable()
@@ -140,6 +151,7 @@ class _MotorLeftPreBf(_Motor):
 
     def __init__(self):
         super().__init__(
+            side=MotorSide.LEFT,
             pin_en=base_module.DigitalBoardPin(base_module.DigitalBoardPins.ml_en),
             pin_m0=base_module.DigitalBoardPin(base_module.DigitalBoardPins.ml_m0),
             pin_m1=base_module.DigitalBoardPin(base_module.DigitalBoardPins.ml_m1),
@@ -166,6 +178,7 @@ class _MotorRightPreBf(_Motor):
     def __init__(self) -> None:
         step_pwm = PWM(Pin(21, Pin.OUT))
         super().__init__(
+            side=MotorSide.RIGHT,
             pin_en=base_module.DigitalBoardPin(base_module.DigitalBoardPins.mr_en),
             pin_m0=base_module.DigitalBoardPin(base_module.DigitalBoardPins.mr_m0),
             pin_m1=base_module.DigitalBoardPin(base_module.DigitalBoardPins.mr_m1),
@@ -199,6 +212,7 @@ class _MotorLeftPostBf(_Motor):
     def __init__(self):
         step_pwm = PWM(Pin(14, Pin.OUT))
         super().__init__(
+            side=MotorSide.LEFT,
             pin_en=base_module.DigitalBoardPin(base_module.DigitalBoardPins.ml_en),
             pin_m0=base_module.DigitalBoardPin(base_module.DigitalBoardPins.ml_m0),
             pin_m1=base_module.DigitalBoardPin(base_module.DigitalBoardPins.ml_m1),
@@ -206,7 +220,6 @@ class _MotorLeftPostBf(_Motor):
             pin_dir=base_module.DigitalBoardPin(base_module.DigitalBoardPins.ml_dir),
             step_pwm=step_pwm,
         )
-
 
     def begin(self):
         self._step_pwm.duty_u16(32768)
@@ -233,6 +246,7 @@ class _MotorRightPostBf(_Motor):
     def __init__(self) -> None:
         step_pwm = PWM(Pin(20, Pin.OUT))
         super().__init__(
+            side=MotorSide.RIGHT,
             pin_en=base_module.DigitalBoardPin(base_module.DigitalBoardPins.mr_en),
             pin_m0=base_module.DigitalBoardPin(base_module.DigitalBoardPins.mr_m0),
             pin_m1=base_module.DigitalBoardPin(base_module.DigitalBoardPins.mr_m1),
