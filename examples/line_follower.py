@@ -2,6 +2,7 @@ import Robi42Lib
 
 
 robi = Robi42Lib.Robi42()
+robi.begin()
 
 robi.motors.left.enable()
 robi.motors.right.enable()

@@ -226,6 +226,7 @@ class BluetoothLineMapper(LineMapper):
 
 def main():
     r = Robi42()
+    r.begin()
     lm = LineMapper(r)
     lm.start()
 

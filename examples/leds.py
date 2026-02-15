@@ -3,6 +3,8 @@ import Robi42Lib
 
 
 robi = Robi42Lib.Robi42()
+robi.begin()
+
 leds_in_order = [
     robi.leds.headlight_right,
     robi.leds.blinker_front_right,

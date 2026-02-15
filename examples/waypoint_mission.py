@@ -294,4 +294,6 @@ def main(robi: Robi42):
 
 
 if __name__ == "__main__":
-    main(Robi42())
+    r = Robi42()
+    r.begin()
+    main(r)
